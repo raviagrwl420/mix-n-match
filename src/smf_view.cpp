@@ -311,11 +311,11 @@ void setupGlui () {
 	view_rot->set_spin(1.0);
 
 	// Add Translation
-	GLUI_Panel *translation_panel = glui->add_panel_to_panel(transformationsPanel, "", GLUI_PANEL_NONE);
-	GLUI_Translation *trans_xy = glui->add_translation_to_panel(translation_panel, "Translate XY", GLUI_TRANSLATION_XY, obj_pos);
-	trans_xy->scale_factor = 0.1f;
-	GLUI_Translation *trans_z = glui->add_translation_to_panel(translation_panel, "Translate Z", GLUI_TRANSLATION_Z, &obj_pos[2]);
-	trans_z->scale_factor = 0.1f;
+	// GLUI_Panel *translation_panel = glui->add_panel_to_panel(transformationsPanel, "", GLUI_PANEL_NONE);
+	// GLUI_Translation *trans_xy = glui->add_translation_to_panel(translation_panel, "Translate XY", GLUI_TRANSLATION_XY, obj_pos);
+	// trans_xy->scale_factor = 0.1f;
+	// GLUI_Translation *trans_z = glui->add_translation_to_panel(translation_panel, "Translate Z", GLUI_TRANSLATION_Z, &obj_pos[2]);
+	// trans_z->scale_factor = 0.1f;
 
 	// Add Buttons
 	glui->add_button_to_panel(controlsPanel, "Open", OPEN, control_cb);
