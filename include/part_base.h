@@ -10,8 +10,13 @@
 #ifndef PART_BASE_H
 #define PART_BASE_H
 
+#include <cgal.h>
+
 class PartBase {
 public:
+	Vector color;
+	BoundingBox boundingBox;
+
 	PartBase () {};
 	~PartBase () {};
 };

@@ -11,6 +11,7 @@
 #include <CGAL/Surface_mesh.h>
 #include <boost/foreach.hpp>
 #include <CGAL/Polygon_mesh_processing/compute_normal.h>
+#include <CGAL/Polygon_mesh_processing/bbox.h>
 
 typedef CGAL::Simple_cartesian<double> K;
 typedef K::Point_3 Point;
@@ -19,3 +20,4 @@ typedef CGAL::Surface_mesh<Point> Mesh;
 typedef Mesh::Vertex_index VertexIndex;
 typedef Mesh::Face_index FaceIndex;
 typedef Mesh::Edge_index EdgeIndex;
+typedef CGAL::Bbox_3 BoundingBox;

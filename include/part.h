@@ -40,6 +40,7 @@ public:
 	static Part initPart (string filename);
 	void writePart (string filename);
 	void render (DisplayType displayType);
+	void renderBoundingBox ();
 };
 
 Part::Part (Mesh mesh) {
@@ -49,6 +50,11 @@ Part::Part (Mesh mesh) {
 	CGAL::Polygon_mesh_processing::compute_normals(mesh,
 		vertexNormals,
 		faceNormals,
+		CGAL::Polygon_mesh_processing::parameters::vertex_point_map(mesh.points()).
+		geom_traits(K()));
+
+
+	boundingBox = CGAL::Polygon_mesh_processing::bbox(mesh,
 		CGAL::Polygon_mesh_processing::parameters::vertex_point_map(mesh.points()).
 		geom_traits(K()));
 
@@ -203,6 +209,48 @@ void Part::render (DisplayType displayType) {
 			renderWireframe(mesh);
 			break;
 	}
+}
+
+void Part::renderBoundingBox () {
+	glBegin(GL_LINES);
+		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmin());
+		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmin());
+
+		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmin());
+		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmin());
+
+		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmin());
+		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmin());
+
+		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmin());
+		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmin());
+
+
+		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmin());
+		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmax());
+
+		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmin());
+		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmax());
+
+		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmin());
+		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmax());
+
+		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmin());
+		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmax());
+
+
+		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmax());
+		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmax());
+
+		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmax());
+		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmax());
+
+		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmax());
+		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmax());
+
+		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmax());
+		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmax());
+	glEnd();
 }
 
 #endif
