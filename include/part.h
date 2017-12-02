@@ -72,15 +72,11 @@ Part Part::initPart (string filename) {
 		exit(1);
 	}
 
-	char type;
-	int numVertices, numFaces;
-
-	smf_file >> type >> numVertices >> numFaces; // Read first line for number of vertices and faces
-
+	// Read Data
 	Mesh m;
-
+	char type;
 	int count = 1;
-	// Read remaining data
+
 	while (smf_file >> type) {
 		string line;
 		float x, y, z;
@@ -102,6 +98,9 @@ Part Part::initPart (string filename) {
 				smf_file >> v1 >> v2 >> v3;
 				// mesh->insertTriangle(v1, v2, v3);
 				m.add_face(vertexMap[v1], vertexMap[v2], vertexMap[v3]);
+				break;
+			default:
+				getline(smf_file, line); // Ignore arbitrary lines
 				break;
 		}
 	}
