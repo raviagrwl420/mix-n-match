@@ -28,10 +28,15 @@ public:
 };
 
 void Group::addMember (PartBase *member) {
+	if (members.size() == 0)
+		boundingBox = member->boundingBox;
+
+	boundingBox += member->boundingBox;
 	members.push_back(member);
 }
 
 void Group::render (DisplayType displayType) {
+	renderBoundingBox();
 	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
 		PartBase* member = *it;
 
