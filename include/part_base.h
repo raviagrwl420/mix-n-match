@@ -12,6 +12,8 @@
 
 #include <cgal.h>
 
+enum DisplayType {FLAT_SHADED, SMOOTH_SHADED, WIREFRAME, SHADED_WITH_EDGES};
+
 class PartBase {
 public:
 	Vector color;
@@ -19,6 +21,8 @@ public:
 
 	PartBase () {};
 	~PartBase () {};
+
+	virtual void render (DisplayType displayType) {};
 };
 
 #endif

@@ -28,8 +28,6 @@ using std::ofstream;
 using std::cerr;
 using std::endl;
 
-enum DisplayType {FLAT_SHADED, SMOOTH_SHADED, WIREFRAME, SHADED_WITH_EDGES};
-
 class Part : public PartBase {
 public:
 	Mesh mesh;
@@ -37,9 +35,9 @@ public:
 	Part () {};
 	~Part () {};
 	Part (Mesh mesh);
-	static Part initPart (string filename);
+	static Part* initPart (string filename);
 	void writePart (string filename);
-	void render (DisplayType displayType);
+	void render (DisplayType displayType) override;
 	void renderBoundingBox ();
 };
 
@@ -61,7 +59,7 @@ Part::Part (Mesh mesh) {
 	this->mesh = mesh;
 }
 
-Part Part::initPart (string filename) {
+Part* Part::initPart (string filename) {
 	map<int, VertexIndex> vertexMap;
 
 	ifstream smf_file;
@@ -107,7 +105,7 @@ Part Part::initPart (string filename) {
 
 	smf_file.close();
 
-	return Part(m);
+	return new Part(m);
 };
 
 void Part::writePart (string filename) {

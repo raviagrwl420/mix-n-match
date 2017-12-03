@@ -15,6 +15,7 @@
 #include <array>
 
 #include <part.h>
+#include <group.h>
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -23,9 +24,10 @@ using std::runtime_error;
 using std::shared_ptr;
 using std::array;
 
-enum Buttons {ROTATION, OPEN, SAVE, QUIT};
+enum Buttons {ROTATION, OPEN, OPEN_DIR, SAVE, QUIT};
 
-Part part;
+Part *part;
+Group group;
 
 float xy_aspect;
 int last_x, last_y;
@@ -56,7 +58,7 @@ void glutReshape (int x, int y) {
 
 // Display mesh function
 void displayMesh (void) {
-	part.render((DisplayType) displayType);
+	group.render((DisplayType) displayType);
 }
 
 // GLUT display function
@@ -109,13 +111,38 @@ void control_cb(int control) {
 			break;
 		}
 
+		case OPEN_DIR: {
+			string folderPath;
+			folderPath = exec("zenity --file-selection --directory --title=\"Select a Directory\" 2>/dev/null");
+			// Remove the newline character at the end
+			folderPath = folderPath.substr(0, folderPath.size() - 1);
+
+			string command = "ls ";
+			command += folderPath;
+
+			string s = exec(command.c_str());
+			string delimiter = "\n";
+
+			group = Group();
+
+			size_t pos = 0;
+			string token;
+			while ((pos = s.find(delimiter)) != string::npos) {
+				token = s.substr(0, pos);
+				part = Part::initPart(folderPath + "/" + token);
+				group.addMember(part);
+				s.erase(0, pos + delimiter.length());
+			}
+			break;
+		}
+
 		case SAVE: {
 			string saveFilePath;
 			saveFilePath = exec("zenity --file-selection --save --confirm-overwrite --title=\"Save SMF file\" 2>/dev/null");
 			// Remove the newline character at the end
 			saveFilePath = saveFilePath.substr(0, saveFilePath.size() - 1);
 			if (saveFilePath.size() != 0)
-				part.writePart(saveFilePath);
+				part->writePart(saveFilePath);
 			break;
 		}
 	}
@@ -162,6 +189,7 @@ void setupGlui () {
 
 	// Add Buttons
 	glui->add_button_to_panel(controlsPanel, "Open", OPEN, control_cb);
+	glui->add_button_to_panel(controlsPanel, "Open Dir", OPEN_DIR, control_cb);
 	glui->add_button_to_panel(controlsPanel, "Save", SAVE, control_cb);
 	glui->add_button_to_panel(controlsPanel, "Quit", QUIT, (GLUI_Update_CB)exit);
 };
