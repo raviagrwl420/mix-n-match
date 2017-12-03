@@ -26,6 +26,7 @@ public:
 
 	virtual void render (DisplayType displayType) {};
 	void renderBoundingBox ();
+	Vector getCenter ();
 };
 
 void PartBase::renderBoundingBox () {
@@ -68,6 +69,13 @@ void PartBase::renderBoundingBox () {
 		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmax());
 		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmax());
 	glEnd();
+}
+
+Vector PartBase::getCenter () {
+	double x = (boundingBox.xmin() + boundingBox.xmax())/2;
+	double y = (boundingBox.ymin() + boundingBox.ymax())/2;
+	double z = (boundingBox.zmin() + boundingBox.zmax())/2;
+	return Vector(x, y, z);
 }
 
 #endif
