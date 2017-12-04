@@ -90,6 +90,51 @@ void getTrainTest(vector<pair<Mat, int>> pView, vector<pair<Mat, int>> nView, ve
 	std::random_shuffle(testData.begin(), testData.end());
 }
 
+float computeResponse(Mat view,int model){
+
+	vector<float> descriptors;
+	hog.compute(view, descriptors);
+	Mat descMat(1, descriptors.size(), CV_32FC1);
+	for(int j = 0; j< descriptors.size(); j++){
+        descMat.at<float>(0,j) = descriptors[j]; 
+    }
+
+    float response;
+    Ptr<SVM> svm;
+
+    if (model == 1) {
+		svm = Algorithm::load<SVM>("model1.yml");
+	} else if (model == 2) {
+		svm = Algorithm::load<SVM>("model2.yml");
+	} else if (model == 3) {
+		svm = Algorithm::load<SVM>("model3.yml");
+	}
+
+	response = svm->predict(descMat,cv::noArray(),cv::ml::StatModel::RAW_OUTPUT);
+	// testResponse = svm->predict(descMat);
+
+	return response;
+
+
+}
+
+
+float checkPlausible(Mat view1, Mat view2, Mat view3){
+
+	float response1, response2, response3, finalResponse;
+
+	response1 = computeResponse(view1,1);
+	response2 = computeResponse(view2,2);
+	response3 = computeResponse(view3,3);
+
+	if(response1 == 1 && response2 == 1 && response3 == 1 ){
+		finalResponse = 1;
+	}else{
+		finalResponse = 0;
+	}
+
+	return finalResponse;
+}
 
 void loadData(vector<pair<Mat, int>> &view1, vector<pair<Mat, int>> &view2, vector<pair<Mat, int>> &view3, string &pathName, int label){
 
@@ -115,12 +160,9 @@ void loadData(vector<pair<Mat, int>> &view1, vector<pair<Mat, int>> &view2, vect
 			}
 		}
 	} else { 
-		printf("check your folder"); 
+		printf("check your folder\n"); 
 	}
 }
-
-
-
 
 
 
@@ -173,7 +215,7 @@ void getSVMParams(SVM *svm)
     cout << "Gamma           : " << svm->getGamma() << endl;
 }
 
-void SVMtrain(Mat &trainMat,vector<int> &trainLabels, Mat &testResponse,Mat &testMat){
+void SVMtrain(Mat &trainMat,vector<int> &trainLabels, Mat &testResponse,Mat &testMat, String modelName){
 #ifdef USE_OPENCV_2
     CvSVMParams params;
     params.svm_type    = CvSVM::C_SVC;
@@ -200,11 +242,16 @@ void SVMtrain(Mat &trainMat,vector<int> &trainLabels, Mat &testResponse,Mat &tes
     Ptr<TrainData> td = TrainData::create(trainMat, ROW_SAMPLE, trainLabels);
     svm->train(td);
     //svm->trainAuto(td);
-    svm->save("model4.yml");
+    svm->save(modelName);
     svm->predict(testMat, testResponse);
     getSVMParams(svm);
 #endif
 }
+
+
+
+
+
 void SVMevaluate(Mat &testResponse,float &count, float &accuracy,vector<int> &testLabels){
 
     for(int i=0;i<testResponse.rows;i++)
@@ -217,7 +264,7 @@ void SVMevaluate(Mat &testResponse,float &count, float &accuracy,vector<int> &te
 }
 
 
-void trainModel(vector<pair<Mat, int>> trainPair, vector<pair<Mat, int>> testPair)
+void trainModel(vector<pair<Mat, int>> trainPair, vector<pair<Mat, int>> testPair, String modelName)
 {
 	std::vector<Mat> trainData;
 	std::vector<Mat> testData;
@@ -244,10 +291,13 @@ void trainModel(vector<pair<Mat, int>> trainPair, vector<pair<Mat, int>> testPai
 	Mat trainMat(trainHOG.size(), descriptor_size, CV_32FC1);
 	Mat testMat(testHOG.size(), descriptor_size, CV_32FC1);
 
+	// cout<<"TrainMat: "<<trainMat.size()<<endl;
+	// cout<<"TestMat: "<<testMat.size()<<endl;
+
 	ConvertVectortoMatrix(trainHOG, testHOG, trainMat, testMat);
 
 	Mat testResponse;
-	SVMtrain(trainMat, trainLabels, testResponse, testMat); 
+	SVMtrain(trainMat, trainLabels, testResponse, testMat, modelName); 
 
 	float count = 0;
 	float accuracy = 0 ;
@@ -259,8 +309,9 @@ void trainModel(vector<pair<Mat, int>> trainPair, vector<pair<Mat, int>> testPai
 
 
 }
-int main() {
+int main(int argc, char **argv) {
 
+	if(argc ==1){
 	std::string pathPositive = "../training_data/training/positive";
 	std::string pathNegative = "../training_data/training/negative";
 
@@ -269,12 +320,49 @@ int main() {
 	//work with one model
 	// you have got trainData1 and testData1
 
-	trainModel(trainData1,testData1);
-	trainModel(trainData2,testData2);
-	trainModel(trainData3, testData3);
+	trainModel(trainData1,testData1, "model1.yml");
+	trainModel(trainData2,testData2, "model2.yml");
+	trainModel(trainData3, testData3,"model3.yml");
+   } else
+
+   {
+
+   	std::string path = argv[1];
+   	Mat img = imread(path.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+   	vector<float> descriptors;
+    hog.compute(img, descriptors);
+
+    Mat descMat(1, descriptors.size(), CV_32FC1);
+
+        for(int j = 0; j< descriptors.size(); j++){
+           descMat.at<float>(0,j) = descriptors[j]; 
+        }
+   
+    float testResponse;
+    Ptr<SVM> svm;
+
+    if (atoi(path.c_str()) % 3 == 1) {
+		svm = Algorithm::load<SVM>("model1.yml");
+	} else if (atoi(path.c_str()) % 3 == 2) {
+		svm = Algorithm::load<SVM>("model2.yml");
+	} else if (atoi(path.c_str()) % 3 == 0) {
+		svm = Algorithm::load<SVM>("model3.yml");
+	}
+
+	// testResponse = svm->predict(descMat,cv::noArray(),cv::ml::StatModel::RAW_OUTPUT);
+	testResponse = svm->predict(descMat);
+
+	cout << "testResponse: " << testResponse << endl;
+
+   
+
+
+
+   }
 
 	
 	return 0;
+
 }
 
 
