@@ -34,6 +34,8 @@ vector<pair<Mat, int>> testData1;
 vector<pair<Mat, int>> testData2;
 vector<pair<Mat, int>> testData3;
 
+int modelCount = 1;
+
 HOGDescriptor hog(
 	Size(224, 224), //winSize
 	Size(112, 112), //blocksize
@@ -89,22 +91,13 @@ void getTrainTest(vector<pair<Mat, int>> pView, vector<pair<Mat, int>> nView, ve
 }
 
 
+void loadData(vector<pair<Mat, int>> &view1, vector<pair<Mat, int>> &view2, vector<pair<Mat, int>> &view3, string &pathName, int label){
 
-void loadData(string &pathPositive, string &pathNegative) {
 	DIR *dir;
 
-	vector<pair<Mat, int>> pView1;
-	vector<pair<Mat, int>> pView2;
-	vector<pair<Mat, int>> pView3;
-
-	vector<pair<Mat, int>> nView1;
-	vector<pair<Mat, int>> nView2;
-	vector<pair<Mat, int>> nView3;
-
-	pair<Mat, int> check;
-
 	struct dirent *ent;
-	const char* path = pathPositive.c_str();
+	const char* path = pathName.c_str();
+
 	if ((dir = opendir(path)) != NULL) {
 		while ((ent = readdir(dir)) != NULL) {
 			if (string(ent->d_name) == string(".") || string(ent->d_name) == string(".."))
@@ -114,37 +107,40 @@ void loadData(string &pathPositive, string &pathNegative) {
 			Mat img = imread(pathName.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 			
 			if (atoi(ent->d_name) % 3 == 1) {
-				pView1.push_back(make_pair(img, 1));
+				view1.push_back(make_pair(img, label));
 			} else if (atoi(ent->d_name) % 3 == 2) {
-				pView2.push_back(make_pair(img, 1));
+				view2.push_back(make_pair(img, label));
 			} else if (atoi(ent->d_name) % 3 == 0) {
-				pView3.push_back(make_pair(img, 1));
+				view3.push_back(make_pair(img, label));
 			}
 		}
 	} else { 
-		printf("check your folder: Postive"); 
+		printf("check your folder"); 
 	}
+}
 
-	const char* path2 = pathNegative.c_str();
-	if ((dir = opendir(path2)) != NULL) {
-		while ((ent = readdir(dir)) != NULL) {
-			if (string(ent->d_name) == string(".") || string(ent->d_name) == string(".."))
-				continue;
 
-			string pathName2 = path2 + string("/") + ent->d_name;
-			Mat img = imread(pathName2.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
-			if (atoi(ent->d_name) % 3 == 1) {
-				nView1.push_back(make_pair(img, 0));
-			} else if (atoi(ent->d_name) % 3 == 2) {
-				nView2.push_back(make_pair(img, 0));
-			} else if (atoi(ent->d_name) % 3 == 0) {
-				nView3.push_back(make_pair(img, 0));
-			}
-		}
-	} else {
-		printf("check your folder: Negative");
-	}
+
+
+
+void loadPositiveNegativeData(string &pathPositive, string &pathNegative) {
+	vector<pair<Mat, int>> pView1;
+	vector<pair<Mat, int>> pView2;
+	vector<pair<Mat, int>> pView3;
+
+	vector<pair<Mat, int>> nView1;
+	vector<pair<Mat, int>> nView2;
+	vector<pair<Mat, int>> nView3;
+
+
+	loadData(pView1, pView2, pView3, pathPositive,1);
+	loadData(nView1, nView2, nView3, pathNegative,0);
+
+	// vector<pair<Mat, int>> view1;
+	// vector<pair<Mat, int>> view2;
+	// vector<pair<Mat, int>> view3;
+
 
 	getTrainTest(pView1, nView1, trainData1, testData1);
 	getTrainTest(pView2, nView2, trainData2, testData2);
@@ -220,28 +216,22 @@ void SVMevaluate(Mat &testResponse,float &count, float &accuracy,vector<int> &te
     accuracy = (count/testResponse.rows)*100;
 }
 
-int main() {
-	std::string pathPositive = "./training_data/training/positive";
-	std::string pathNegative = "./training_data/training/negative";
 
-	loadData(pathPositive, pathNegative);
-
-	//work with one model
-	// you have got trainData1 and testData1
-
+void trainModel(vector<pair<Mat, int>> trainPair, vector<pair<Mat, int>> testPair)
+{
 	std::vector<Mat> trainData;
 	std::vector<Mat> testData;
 	std::vector<int> trainLabels;
 	std::vector<int> testLabels;
 
 	for (int i =0; i< trainData1.size(); i++) {
-		trainData.push_back(trainData3[i].first);
-		trainLabels.push_back(trainData3[i].second);
+		trainData.push_back(trainPair[i].first);
+		trainLabels.push_back(trainPair[i].second);
 	}
 
 	for (int i =0; i< testData1.size(); i++) {
-		testData.push_back(testData3[i].first);
-		testLabels.push_back(testData3[i].second);
+		testData.push_back(testPair[i].first);
+		testLabels.push_back(testPair[i].second);
 	}
 
 	vector<vector<float>> trainHOG;
@@ -263,7 +253,27 @@ int main() {
 	float accuracy = 0 ;
 	SVMevaluate(testResponse, count, accuracy, testLabels);
 
-	cout << "Accuracy: " << accuracy << "%"<< endl;
+	cout << "Accuracy of model "<<modelCount<<" : " << accuracy << "%"<< endl;
+
+	modelCount++;
+
+
+}
+int main() {
+
+	std::string pathPositive = "../training_data/training/positive";
+	std::string pathNegative = "../training_data/training/negative";
+
+	loadPositiveNegativeData(pathPositive, pathNegative);
+
+	//work with one model
+	// you have got trainData1 and testData1
+
+	trainModel(trainData1,testData1);
+	trainModel(trainData2,testData2);
+	trainModel(trainData3, testData3);
+
+	
 	return 0;
 }
 
