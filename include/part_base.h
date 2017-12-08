@@ -33,9 +33,9 @@ public:
 		this->label = label;
 	};
 
-	virtual PartBase *getMember (string label) {
-		return this;
-	};
+	virtual PartBase *getMember (string label) {};
+
+	virtual void setMember (string label, PartBase *part) {};
 
 	virtual void render (DisplayType displayType) {};
 
