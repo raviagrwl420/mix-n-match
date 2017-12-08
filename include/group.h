@@ -17,6 +17,7 @@
 
 using std::vector;
 using std::map;
+using std::make_pair;
 
 class Group : public PartBase {
 public:
@@ -28,6 +29,8 @@ public:
 
 	void addMember (PartBase *member);
 	void render (DisplayType displayType) override;
+
+	PartBase *getMember (string label);
 };
 
 Group::Group (string label) {
@@ -39,6 +42,10 @@ void Group::addMember (PartBase *member) {
 		boundingBox = member->boundingBox;
 
 	boundingBox += member->boundingBox;
+
+	// Insert label in labelIndexMap
+	labelIndexMap.insert(make_pair(member->label, members.size()));
+
 	members.push_back(member);
 }
 
@@ -49,6 +56,13 @@ void Group::render (DisplayType displayType) {
 
 		member->render(displayType);
 	}
+}
+
+PartBase *Group::getMember (string label) {
+	if (labelIndexMap.count(label) > 0)
+		return members[labelIndexMap[label]];
+	else
+		return NULL;
 }
 
 #endif

@@ -33,6 +33,10 @@ public:
 		this->label = label;
 	};
 
+	virtual PartBase *getMember (string label) {
+		return this;
+	};
+
 	virtual void render (DisplayType displayType) {};
 
 	void renderBoundingBox ();
