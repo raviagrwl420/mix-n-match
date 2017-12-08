@@ -26,7 +26,7 @@ using std::runtime_error;
 using std::shared_ptr;
 using std::array;
 
-enum Buttons {ROTATION, OPEN, OPEN_DIR, SAVE, QUIT, CHAIR_A, CHAIR_B};
+enum Buttons {ROTATION, OPEN, OPEN_DIR, SAVE, QUIT, CHAIR_A, CHAIR_B, SWAP_LEGS, SWAP_BACK, SWAP_SEAT};
 
 vector<PartBase*> chairs;
 PartBase *chair;
@@ -43,7 +43,9 @@ int main_window;
 int displayType = FLAT_SHADED;
 float scale = 1.0;
 float view_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
-float obj_pos[] = {0.0, 0.0, 0.0};
+float chairA_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
+float chairB_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
+float obj_pos[] = {0.0, 0.0, -5.0};
 
 void updateGLUI (vector<PartBase*>);
 
@@ -63,6 +65,22 @@ void glutReshape (int x, int y) {
 	glutPostRedisplay();
 }
 
+void displayAxes () {
+	glBegin(GL_LINES);
+		glColor3f(1.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(1.0, 0.0, 0.0);
+
+		glColor3f(0.0, 1.0, 0.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 1.0, 0.0);
+
+		glColor3f(0.0, 0.0, 1.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 1.0);
+	glEnd();
+}
+
 // Display mesh function
 void displayMesh (void) {
 	// for (PartBase *chair : chairs) {
@@ -71,12 +89,21 @@ void displayMesh (void) {
 
 	// if (chair == NULL)
 	// 	return;
-
+	glPushMatrix();
+	glTranslatef(-1,0,0);
+	glMultMatrixf(chairA_rotate);
+	glTranslatef(0,0,-0.5);
 	if (chairA != NULL)
 		chairA->render((DisplayType) displayType);
+	glPopMatrix();
 
+	glPushMatrix();
+	glTranslatef(1,0,0);
+	glMultMatrixf(chairB_rotate);
+	glTranslatef(0,0,-0.5);
 	if (chairB != NULL)
 		chairB->render((DisplayType) displayType);
+	glPopMatrix();
 }
 
 // GLUT display function
@@ -98,6 +125,7 @@ void glutDisplay (void) {
 
 	glColor3f(1.0, 1.0, 0.0);
 
+	displayAxes();
 	displayMesh();
 
 	glutSwapBuffers();
@@ -157,6 +185,8 @@ GLUI* glui;
 GLUI_Panel *chairsPanel;
 GLUI_Listbox *chairsBoxA;
 GLUI_Listbox *chairsBoxB;
+GLUI_Rotation *chairRotA;
+GLUI_Rotation *chairRotB;
 int chairAIndex;
 int chairBIndex;
 
@@ -166,13 +196,41 @@ void chair_cb (int control) {
 		chairA = chairs[chairAIndex];
 	} else if (control == CHAIR_B) {
 		chairB = chairs[chairBIndex];
+	} else if (control == SWAP_LEGS) {
+		PartBase *legA = chairA->getMember("Group")->getMember("Leg");
+		PartBase *legB = chairB->getMember("Group")->getMember("Leg");
+
+		chairA->getMember("Group")->setMember("Leg", legB);
+		chairB->getMember("Group")->setMember("Leg", legA);
+	} else if (control == SWAP_BACK) {
+		PartBase *backA = chairA->getMember("Group")->getMember("Back");
+		PartBase *backB = chairB->getMember("Group")->getMember("Back");
+
+		chairA->getMember("Group")->setMember("Back", backB);
+		chairB->getMember("Group")->setMember("Back", backA);
+	} else if (control == SWAP_SEAT) {
+		PartBase *seatA = chairA->getMember("Group")->getMember("Seat");
+		PartBase *seatB = chairB->getMember("Group")->getMember("Seat");
+
+		chairA->getMember("Group")->setMember("Seat", seatB);
+		chairB->getMember("Group")->setMember("Seat", seatA);
 	}
 }
 
 void updateGLUI (vector<PartBase*> chairs) {
 	chairsPanel = glui->add_panel("Chairs");
+
 	chairsBoxA = new GLUI_Listbox(chairsPanel, "Chair A:", &chairAIndex, CHAIR_A, chair_cb);
+	chairRotA = glui->add_rotation_to_panel(chairsPanel, "Rotate Chair A", chairA_rotate);
+	chairRotA->set_spin(1.0);
+
 	chairsBoxB = new GLUI_Listbox(chairsPanel, "Chair B:", &chairBIndex, CHAIR_B, chair_cb);
+	chairRotB = glui->add_rotation_to_panel(chairsPanel, "Rotate Chair B", chairB_rotate);
+	chairRotB->set_spin(1.0);
+
+	glui->add_button_to_panel(chairsPanel, "Swap Legs", SWAP_LEGS, chair_cb);
+	glui->add_button_to_panel(chairsPanel, "Swap Back", SWAP_BACK, chair_cb);
+	glui->add_button_to_panel(chairsPanel, "Swap Seat", SWAP_SEAT, chair_cb);
 
 	for (int i = 0; i < chairs.size(); i++) {
 		PartBase *chair = chairs[i];
@@ -253,6 +311,10 @@ int main(int argc, char* argv[]) {
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light0_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
 	glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
+
+	// Setup Color
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
 	// Enable z-buffering
 	glEnable(GL_DEPTH_TEST);
