@@ -9,11 +9,13 @@
 
 #include <GL/glut.h>
 #include <GL/glui.h>
+
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <array>
 
+#include <parser.h>
 #include <part.h>
 #include <group.h>
 
@@ -26,8 +28,7 @@ using std::array;
 
 enum Buttons {ROTATION, OPEN, OPEN_DIR, SAVE, QUIT};
 
-Part *part;
-Group group;
+vector<PartBase*> chairs;
 
 float xy_aspect;
 int last_x, last_y;
@@ -58,7 +59,9 @@ void glutReshape (int x, int y) {
 
 // Display mesh function
 void displayMesh (void) {
-	group.render((DisplayType) displayType);
+	for (PartBase *chair : chairs) {
+		chair->render((DisplayType) displayType);
+	}
 }
 
 // GLUT display function
@@ -106,8 +109,8 @@ void control_cb(int control) {
 			inputFilePath = exec("zenity --file-selection --file-filter='3D Object files (smf,obj) | *.smf *.obj' --title=\"Select a SMF file\" 2>/dev/null");
 			// Remove the newline character at the end
 			inputFilePath = inputFilePath.substr(0, inputFilePath.size() - 1);
-			if (inputFilePath.size() != 0)
-				part = Part::initPart(inputFilePath);
+			if (inputFilePath.size() != 0) {
+			}
 			break;
 		}
 
@@ -117,22 +120,9 @@ void control_cb(int control) {
 			// Remove the newline character at the end
 			folderPath = folderPath.substr(0, folderPath.size() - 1);
 
-			string command = "ls ";
-			command += folderPath;
+			// Load Files
+			chairs = loadFiles(folderPath);
 
-			string s = exec(command.c_str());
-			string delimiter = "\n";
-
-			group = Group();
-
-			size_t pos = 0;
-			string token;
-			while ((pos = s.find(delimiter)) != string::npos) {
-				token = s.substr(0, pos);
-				part = Part::initPart(folderPath + "/" + token);
-				group.addMember(part);
-				s.erase(0, pos + delimiter.length());
-			}
 			break;
 		}
 
@@ -141,8 +131,7 @@ void control_cb(int control) {
 			saveFilePath = exec("zenity --file-selection --save --confirm-overwrite --title=\"Save SMF file\" 2>/dev/null");
 			// Remove the newline character at the end
 			saveFilePath = saveFilePath.substr(0, saveFilePath.size() - 1);
-			if (saveFilePath.size() != 0)
-				part->writePart(saveFilePath);
+			if (saveFilePath.size() != 0);
 			break;
 		}
 	}

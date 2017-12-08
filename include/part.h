@@ -34,13 +34,13 @@ public:
 
 	Part () {};
 	~Part () {};
-	Part (Mesh mesh);
-	static Part* initPart (string filename);
+	Part (string label, Mesh mesh);
+	static Part* initPart (string label, string filename);
 	void writePart (string filename);
 	void render (DisplayType displayType) override;
 };
 
-Part::Part (Mesh mesh) {
+Part::Part (string label, Mesh mesh) {
 	auto faceNormals = mesh.add_property_map<FaceIndex, Vector>("f:normals", CGAL::NULL_VECTOR).first;
 	auto vertexNormals = mesh.add_property_map<VertexIndex, Vector>("v:normals", CGAL::NULL_VECTOR).first;
 
@@ -58,7 +58,7 @@ Part::Part (Mesh mesh) {
 	this->mesh = mesh;
 }
 
-Part* Part::initPart (string filename) {
+Part* Part::initPart (string label, string filename) {
 	map<int, VertexIndex> vertexMap;
 
 	ifstream smf_file;
@@ -104,7 +104,7 @@ Part* Part::initPart (string filename) {
 
 	smf_file.close();
 
-	return new Part(m);
+	return new Part(label, m);
 };
 
 void Part::writePart (string filename) {

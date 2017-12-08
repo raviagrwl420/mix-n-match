@@ -37,11 +37,13 @@ PartBase *loadFileOrFolder (path fileOrFolderPath) {
 
 	if (is_regular_file(fileOrFolderPath) && is3DObjectFile(fileOrFolderPath)) {
 		cout << "		Loading File: " << fileOrFolderPath << endl;
-		newPart = Part::initPart(fileOrFolderPath.string());
+		string filename = fileOrFolderPath.stem().string();
+		newPart = Part::initPart(filename, fileOrFolderPath.string());
 	}
 
 	if (is_directory(fileOrFolderPath)) {
-		Group *group = new Group();
+		string foldername = fileOrFolderPath.stem().string();
+		Group *group = new Group(foldername);
 
 		cout << "	Loading Folder: " << fileOrFolderPath << endl;
 		for (directory_entry& subDirectory: directory_iterator(fileOrFolderPath)) {

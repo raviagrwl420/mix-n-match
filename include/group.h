@@ -13,19 +13,26 @@
 #include <part_base.h>
 
 #include <vector>
+#include <map>
 
 using std::vector;
+using std::map;
 
 class Group : public PartBase {
 public:
 	vector<PartBase*> members;
+	map<string, int> labelIndexMap;
 
-	Group () {};
+	Group (string label);
 	~Group () {};
 
 	void addMember (PartBase *member);
 	void render (DisplayType displayType) override;
 };
+
+Group::Group (string label) {
+	this->setLabel(label);
+}
 
 void Group::addMember (PartBase *member) {
 	if (members.size() == 0)

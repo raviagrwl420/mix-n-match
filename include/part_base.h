@@ -10,21 +10,31 @@
 #ifndef PART_BASE_H
 #define PART_BASE_H
 
-#include <cgal.h>
+#include <string>
 
 #include <GL/glut.h>
+
+#include <cgal.h>
+
+using std::string;
 
 enum DisplayType {FLAT_SHADED, SMOOTH_SHADED, WIREFRAME, SHADED_WITH_EDGES};
 
 class PartBase {
 public:
+	string label;
 	Vector color;
 	BoundingBox boundingBox;
 
 	PartBase () {};
 	~PartBase () {};
 
+	void setLabel (string label) {
+		this->label = label;
+	};
+
 	virtual void render (DisplayType displayType) {};
+
 	void renderBoundingBox ();
 	Vector getCenter ();
 };
