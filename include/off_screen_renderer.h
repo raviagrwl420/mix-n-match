@@ -19,6 +19,8 @@
 
 using std::vector;
 
+enum View {FRONT, SIDE, TOP, SIDE_RIGHT};
+
 namespace OffScreenRenderer {
 	inline void mGLRender(Mesh mesh, Vector cam, int total = -1, bool inverse = false, double maxD = -1) {
 		glMatrixMode(GL_MODELVIEW);
@@ -27,7 +29,7 @@ namespace OffScreenRenderer {
 		if (!inverse)
 			gluLookAt(cam[0], cam[1], cam[2], 0, 0, 0, 0, 1e-10, 1);
 		else
-			gluLookAt(cam[0], cam[1], cam[2], 0, 0, 0, 0, -1, 0);
+			gluLookAt(cam[0], cam[1], cam[2], 0, 0, 0, 0, 1, 0);
 		
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -162,7 +164,31 @@ namespace OffScreenRenderer {
 
 		OSMesaDestroyContext(ctx);
 
+		write_ppm_2("Test", Pixels, WIDTH, HEIGHT);
+
 		return Pixels;
+	}
+
+	unsigned char *getView (Mesh mesh, View view) {
+		Vector cam;
+		bool inverse = false; 
+		switch(view) {
+			case FRONT:
+				cam = Vector(0, -1, 0);
+				break;
+			case SIDE:
+				cam = Vector(-1, 0, 0);
+				break;
+			case TOP:
+				cam = Vector(0, 0, 1);
+				inverse = true;
+				break;
+			case SIDE_RIGHT:
+				cam = Vector(1, 0, 0);
+				break;
+		}
+
+		return render(mesh, cam, NULL, inverse);
 	}
 }
 
