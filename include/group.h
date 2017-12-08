@@ -31,6 +31,7 @@ public:
 	void render (DisplayType displayType) override;
 
 	PartBase *getMember (string label);
+	void setMember (string label, PartBase *member);
 };
 
 Group::Group (string label) {
@@ -63,6 +64,11 @@ PartBase *Group::getMember (string label) {
 		return members[labelIndexMap[label]];
 	else
 		return NULL;
+}
+
+void Group::setMember (string label, PartBase *member) {
+	if (labelIndexMap.count(label) > 0)
+		members[labelIndexMap[label]] = member;
 }
 
 #endif
