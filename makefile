@@ -22,7 +22,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CPPFLAGS := -std=c++11 -Wall -w -I $(IDIR) 
 
 # Libraries
-LIB := -lGL -lglut -lglui
+LIB := -lGL -lglut -lglui -lCGAL -lboost_system -lboost_filesystem
 
 # Build Executable
 $(TARGET): $(OBJECTS)

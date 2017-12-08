@@ -7,13 +7,17 @@
 	@brief		CMPT-764: Assignment 2, Implements SMF viewer.
 */
 
-#include <smf_parser.h>
 #include <GL/glut.h>
 #include <GL/glui.h>
+
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <array>
+
+#include <parser.h>
+#include <part.h>
+#include <group.h>
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -22,10 +26,13 @@ using std::runtime_error;
 using std::shared_ptr;
 using std::array;
 
-enum DisplayType {FLAT_SHADED, SMOOTH_SHADED, WIREFRAME, SHADED_WITH_EDGES};
-enum Buttons {ROTATION, OPEN, SAVE, QUIT, SUBDIVIDE, DECIMATE};
+enum Buttons {ROTATION, OPEN, OPEN_DIR, SAVE, QUIT, CHAIR_A, CHAIR_B, SWAP_LEGS, SWAP_BACK, SWAP_SEAT};
 
-Mesh *mesh;
+vector<PartBase*> chairs;
+PartBase *chair;
+
+PartBase *chairA;
+PartBase *chairB;
 
 float xy_aspect;
 int last_x, last_y;
@@ -36,15 +43,11 @@ int main_window;
 int displayType = FLAT_SHADED;
 float scale = 1.0;
 float view_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
-float obj_pos[] = {0.0, 0.0, 0.0};
+float chairA_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
+float chairB_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
+float obj_pos[] = {0.0, 0.0, -5.0};
 
-// Subdivision
-int subdivisionType = BUTTERFLY;
-int subdivisionLevel = 1;
-
-// Decimation
-int decimationK = 1;
-int decimationNumber = 1;
+void updateGLUI (vector<PartBase*>);
 
 // GLUT idle function
 void glutIdle (void) {
@@ -62,111 +65,45 @@ void glutReshape (int x, int y) {
 	glutPostRedisplay();
 }
 
-// Displays mesh as flat shaded
-void displayFlatShaded (void) {
-	glShadeModel(GL_FLAT);
-	glEnable(GL_NORMALIZE);
-	glBegin(GL_TRIANGLES);
-	
-	Face *f;
-	Vertex *vertices[3];
-
-	vec3 faceNormal;
-
-	for (int i = 1; i <= mesh->numFaces; i++) {
-		f = mesh->faceMap[i];
-
-		faceNormal = mesh->getFaceNormal(f);
-		glNormal3f(faceNormal.x, faceNormal.y, faceNormal.z);
-
-		mesh->getAllVerticesForFace(f, vertices);
-
-		for (int j = 0; j < 3; j++) {
-			vec3 position = vertices[j]->position;
-			glVertex3f(position.x, position.y, position.z);
-		}
-	}
-
-	glEnd();
-}
-
-// Displays mesh as smooth shaded
-void displaySmoothShaded (void) {
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_NORMALIZE);
-	glBegin(GL_TRIANGLES);
-	
-	Face *f;
-	Vertex *vertices[3];
-	vec3 vertexNormal;
-
-	for (int i = 1; i <= mesh->numFaces; i++) {
-		f = mesh->faceMap[i];
-
-		mesh->getAllVerticesForFace(f, vertices);
-
-		for (int j = 0; j < 3; j++) {
-			vertexNormal = vertices[j]->normal;
-			glNormal3f(vertexNormal.x, vertexNormal.y, vertexNormal.z);
-
-			vec3 position = vertices[j]->position;
-			glVertex3f(position.x, position.y, position.z);
-		}
-	}
-
-	glEnd();
-}
-
-// Display mesh as wireframe
-void displayWireframe (void) {
+void displayAxes () {
 	glBegin(GL_LINES);
+		glColor3f(1.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(1.0, 0.0, 0.0);
 
-	W_edge *edge;
+		glColor3f(0.0, 1.0, 0.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 1.0, 0.0);
 
-	for (map<string, W_edge*>::const_iterator it = mesh->edgeMap.begin(); it != mesh->edgeMap.end(); it++) {
-		edge = it->second;
-
-		if (edge == NULL) {
-			std::cout << "First!!::" << it->first << std::endl;
-			std::cout << "edge:" << edge << std::endl;
-			std::cout << "edge index:" << mesh->edgeIndexMap[edge] << std::endl;
-			std::cout << "edge key:" << mesh->edgeKeyMap[mesh->edgeIndexMap[edge]] << std::endl;
-		}
-		
-
-		vec3 startPosition = edge->start->position;
-		vec3 endPosition = edge->end->position;
-
-		glVertex3f(startPosition.x, startPosition.y, startPosition.z);
-		glVertex3f(endPosition.x, endPosition.y, endPosition.z);
-
-	}
-
+		glColor3f(0.0, 0.0, 1.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 1.0);
 	glEnd();
 }
 
 // Display mesh function
 void displayMesh (void) {
-	if (mesh == NULL)
-		return;
+	// for (PartBase *chair : chairs) {
+	// 	chair->render((DisplayType) displayType);
+	// }
 
-	switch (displayType) {
-		case FLAT_SHADED:
-			displayFlatShaded();
-			break;
-		case SMOOTH_SHADED:
-			displaySmoothShaded();
-			break;
-		case WIREFRAME:
-			displayWireframe();
-			break;
-		case SHADED_WITH_EDGES:
-			displayFlatShaded();
-			glEnable(GL_POLYGON_OFFSET_FILL);
-			glPolygonOffset(1.0, 1.0);
-			displayWireframe();
-			break;
-	}
+	// if (chair == NULL)
+	// 	return;
+	glPushMatrix();
+	glTranslatef(-1,0,0);
+	glMultMatrixf(chairA_rotate);
+	glTranslatef(0,0,-0.5);
+	if (chairA != NULL)
+		chairA->render((DisplayType) displayType);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(1,0,0);
+	glMultMatrixf(chairB_rotate);
+	glTranslatef(0,0,-0.5);
+	if (chairB != NULL)
+		chairB->render((DisplayType) displayType);
+	glPopMatrix();
 }
 
 // GLUT display function
@@ -188,6 +125,7 @@ void glutDisplay (void) {
 
 	glColor3f(1.0, 1.0, 0.0);
 
+	displayAxes();
 	displayMesh();
 
 	glutSwapBuffers();
@@ -206,25 +144,29 @@ string exec(const char* cmd) {
     return result;
 }
 
-// Initialize mesh
-void initMesh (string smf_filename) {
-	mesh = parseSmfFile(smf_filename);
-	mesh->computeBoundingBox();
-	obj_pos[0] = -(mesh->xMin + mesh->xMax) / 2;
-	obj_pos[1] = -(mesh->yMin + mesh->yMax) / 2;
-	obj_pos[2] = 1.5 * (mesh->zMin - mesh->zMax);
-}
-
 // GLUI control callback
 void control_cb(int control) {
 	switch (control) {
 		case OPEN: {
 			string inputFilePath;
-			inputFilePath = exec("zenity --file-selection --file-filter='SMF files (smf) | *.smf' --title=\"Select a SMF file\" 2>/dev/null");
+			inputFilePath = exec("zenity --file-selection --file-filter='3D Object files (smf,obj) | *.smf *.obj' --title=\"Select a SMF file\" 2>/dev/null");
 			// Remove the newline character at the end
 			inputFilePath = inputFilePath.substr(0, inputFilePath.size() - 1);
-			if (inputFilePath.size() != 0)
-				initMesh(inputFilePath);
+			if (inputFilePath.size() != 0) {
+			}
+			break;
+		}
+
+		case OPEN_DIR: {
+			string folderPath;
+			folderPath = exec("zenity --file-selection --directory --title=\"Select a Directory\" 2>/dev/null");
+			// Remove the newline character at the end
+			folderPath = folderPath.substr(0, folderPath.size() - 1);
+
+			// Load Files
+			chairs = loadFiles(folderPath);
+			updateGLUI(chairs);
+
 			break;
 		}
 
@@ -233,31 +175,77 @@ void control_cb(int control) {
 			saveFilePath = exec("zenity --file-selection --save --confirm-overwrite --title=\"Save SMF file\" 2>/dev/null");
 			// Remove the newline character at the end
 			saveFilePath = saveFilePath.substr(0, saveFilePath.size() - 1);
-			if (saveFilePath.size() != 0)
-				writeSmfFile(mesh, saveFilePath);
+			if (saveFilePath.size() != 0);
 			break;
 		}
 	}
 };
 
-void subdivision_cb (int control) {
-	if (mesh == NULL)
-		return;
+GLUI* glui;
+GLUI_Panel *chairsPanel;
+GLUI_Listbox *chairsBoxA;
+GLUI_Listbox *chairsBoxB;
+GLUI_Rotation *chairRotA;
+GLUI_Rotation *chairRotB;
+int chairAIndex;
+int chairBIndex;
 
-	mesh = mesh->subdivideMesh(subdivisionType, subdivisionLevel);
+// GLUI chair callback
+void chair_cb (int control) {
+	if (control == CHAIR_A) {
+		chairA = chairs[chairAIndex];
+	} else if (control == CHAIR_B) {
+		chairB = chairs[chairBIndex];
+	} else if (control == SWAP_LEGS) {
+		PartBase *legA = chairA->getMember("Group")->getMember("Leg");
+		PartBase *legB = chairB->getMember("Group")->getMember("Leg");
+
+		chairA->getMember("Group")->setMember("Leg", legB);
+		chairB->getMember("Group")->setMember("Leg", legA);
+	} else if (control == SWAP_BACK) {
+		PartBase *backA = chairA->getMember("Group")->getMember("Back");
+		PartBase *backB = chairB->getMember("Group")->getMember("Back");
+
+		chairA->getMember("Group")->setMember("Back", backB);
+		chairB->getMember("Group")->setMember("Back", backA);
+	} else if (control == SWAP_SEAT) {
+		PartBase *seatA = chairA->getMember("Group")->getMember("Seat");
+		PartBase *seatB = chairB->getMember("Group")->getMember("Seat");
+
+		chairA->getMember("Group")->setMember("Seat", seatB);
+		chairB->getMember("Group")->setMember("Seat", seatA);
+	}
 }
 
-void decimation_cb (int control) {
-	if (mesh == NULL)
-		return;
+void updateGLUI (vector<PartBase*> chairs) {
+	chairsPanel = glui->add_panel("Chairs");
 
-	mesh->decimate(decimationK, decimationNumber);
-}
+	chairsBoxA = new GLUI_Listbox(chairsPanel, "Chair A:", &chairAIndex, CHAIR_A, chair_cb);
+	chairRotA = glui->add_rotation_to_panel(chairsPanel, "Rotate Chair A", chairA_rotate);
+	chairRotA->set_spin(1.0);
+
+	chairsBoxB = new GLUI_Listbox(chairsPanel, "Chair B:", &chairBIndex, CHAIR_B, chair_cb);
+	chairRotB = glui->add_rotation_to_panel(chairsPanel, "Rotate Chair B", chairB_rotate);
+	chairRotB->set_spin(1.0);
+
+	glui->add_button_to_panel(chairsPanel, "Swap Legs", SWAP_LEGS, chair_cb);
+	glui->add_button_to_panel(chairsPanel, "Swap Back", SWAP_BACK, chair_cb);
+	glui->add_button_to_panel(chairsPanel, "Swap Seat", SWAP_SEAT, chair_cb);
+
+	for (int i = 0; i < chairs.size(); i++) {
+		PartBase *chair = chairs[i];
+		chairsBoxA->add_item(i, (chair->label).c_str());
+		chairsBoxB->add_item(i, (chair->label).c_str());
+	}
+
+	chairA = chairs[0];
+	chairB = chairs[0];
+};
 
 // Setup GLUI
 void setupGlui () {
 	// Initialize GLUI subwindow
-	GLUI* glui = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
+	glui = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
 	
 	// Set main GFX window	
 	glui->set_main_gfx_window(main_window);
@@ -265,8 +253,6 @@ void setupGlui () {
 	// Setup UI
 	// Add Panel "Display Options"
 	GLUI_Panel *displayOptionsPanel = glui->add_panel("Display Options");
-	GLUI_Panel *subdivisionPanel = glui->add_panel("Subdivision");
-	GLUI_Panel *decimationPanel = glui->add_panel("Decimation");
 	GLUI_Panel *transformationsPanel = glui->add_panel("Transformations");
 	GLUI_Panel *controlsPanel = glui->add_panel("Controls");
 
@@ -276,29 +262,6 @@ void setupGlui () {
 	listbox->add_item(SMOOTH_SHADED, "Smooth Shaded");
 	listbox->add_item(WIREFRAME, "Wireframe");
 	listbox->add_item(SHADED_WITH_EDGES, "Shaded with Edges");
-
-	// Subdivision
-	GLUI_Listbox *subdivisionListbox = new GLUI_Listbox(subdivisionPanel, "Type:", &subdivisionType);
-	subdivisionListbox->add_item(BUTTERFLY, "Butterfly");
-	subdivisionListbox->add_item(LOOP, "Loop");
-	subdivisionListbox->set_alignment(GLUI_ALIGN_RIGHT);
-
-	GLUI_Spinner *subdivision_level_spinner = new GLUI_Spinner(subdivisionPanel, "Level:", &subdivisionLevel);
-  	subdivision_level_spinner->set_int_limits(1, 5);
-  	subdivision_level_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-
-  	glui->add_button_to_panel(subdivisionPanel, "subdivide", SUBDIVIDE, subdivision_cb);
-
-  	// Decimation
-	GLUI_Spinner *decimation_k_spinner = new GLUI_Spinner(decimationPanel, "k:", &decimationK);
-	decimation_k_spinner->set_int_limits(1, 20000);
-	decimation_k_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-
-	GLUI_Spinner *decimation_number_spinner = new GLUI_Spinner(decimationPanel, "Edge Count:", &decimationNumber);
-	decimation_number_spinner->set_int_limits(1, 20000);
-	decimation_number_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-
-	glui->add_button_to_panel(decimationPanel, "decimate", DECIMATE, decimation_cb);
 
 	// Add Scale Spinner
 	GLUI_Spinner *scale_spinner = new GLUI_Spinner(transformationsPanel, "Scale:", &scale);
@@ -319,6 +282,7 @@ void setupGlui () {
 
 	// Add Buttons
 	glui->add_button_to_panel(controlsPanel, "Open", OPEN, control_cb);
+	glui->add_button_to_panel(controlsPanel, "Open Dir", OPEN_DIR, control_cb);
 	glui->add_button_to_panel(controlsPanel, "Save", SAVE, control_cb);
 	glui->add_button_to_panel(controlsPanel, "Quit", QUIT, (GLUI_Update_CB)exit);
 };
@@ -347,6 +311,10 @@ int main(int argc, char* argv[]) {
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light0_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
 	glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
+
+	// Setup Color
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
 	// Enable z-buffering
 	glEnable(GL_DEPTH_TEST);
