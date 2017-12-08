@@ -26,9 +26,10 @@ using std::runtime_error;
 using std::shared_ptr;
 using std::array;
 
-enum Buttons {ROTATION, OPEN, OPEN_DIR, SAVE, QUIT};
+enum Buttons {ROTATION, OPEN, OPEN_DIR, SAVE, QUIT, CHAIR};
 
 vector<PartBase*> chairs;
+PartBase *chair;
 
 float xy_aspect;
 int last_x, last_y;
@@ -40,6 +41,8 @@ int displayType = FLAT_SHADED;
 float scale = 1.0;
 float view_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 float obj_pos[] = {0.0, 0.0, 0.0};
+
+void updateGLUI (vector<PartBase*>);
 
 // GLUT idle function
 void glutIdle (void) {
@@ -59,9 +62,14 @@ void glutReshape (int x, int y) {
 
 // Display mesh function
 void displayMesh (void) {
-	for (PartBase *chair : chairs) {
-		chair->render((DisplayType) displayType);
-	}
+	// for (PartBase *chair : chairs) {
+	// 	chair->render((DisplayType) displayType);
+	// }
+
+	if (chair == NULL)
+		return;
+
+	chair->render((DisplayType) displayType);
 }
 
 // GLUT display function
@@ -122,6 +130,7 @@ void control_cb(int control) {
 
 			// Load Files
 			chairs = loadFiles(folderPath);
+			updateGLUI(chairs);
 
 			break;
 		}
@@ -137,11 +146,30 @@ void control_cb(int control) {
 	}
 };
 
+GLUI* glui;
+int chairIndex;
+
+// GLUI chair callback
+void chair_cb (int control) {
+	chair = chairs[chairIndex];
+}
+
+void updateGLUI (vector<PartBase*> chairs) {
+	GLUI_Panel *chairsPanel = glui->add_panel("Chairs");
+	GLUI_Listbox *chairsBox = new GLUI_Listbox(chairsPanel, "Chair:", &chairIndex, CHAIR, chair_cb);
+
+	for (int i = 0; i < chairs.size(); i++) {
+		PartBase *chair = chairs[i];
+		chairsBox->add_item(i, (chair->label).c_str());
+	}
+
+	chair = chairs[0];
+};
 
 // Setup GLUI
 void setupGlui () {
 	// Initialize GLUI subwindow
-	GLUI* glui = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
+	glui = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
 	
 	// Set main GFX window	
 	glui->set_main_gfx_window(main_window);
