@@ -18,6 +18,7 @@
 #include <parser.h>
 #include <part.h>
 #include <group.h>
+#include <scorer.h>
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -288,6 +289,32 @@ void setupGlui () {
 };
 
 int main(int argc, char* argv[]) {
+	if (argc > 1) {
+		if (string(argv[1]) == string("train")) {
+			string path = argv[2];
+
+			string pathPositive = path + "/positive";
+			string pathNegative = path + "/negative";
+
+			trainAllModels(pathPositive, pathNegative);
+		} else if (string(argv[1]) == string("predict")) {
+			string path = argv[2];
+
+			Mat img = imread(path.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+			int prediction;
+			if (atoi(path.c_str()) % 3 == 1) {
+				prediction = predict(img, FRONT);
+			} else if (atoi(path.c_str()) % 3 == 2) {
+				prediction = predict(img, SIDE);
+			} else if (atoi(path.c_str()) % 3 == 0) {
+				prediction = predict(img, TOP);
+			}
+
+			cout << "Prediction: " << prediction << endl;
+		}
+		return 0;
+	}
+
 	// Initialize GLUT
 	glutInit(&argc, argv);
 	glutInitWindowPosition(50, 50);
