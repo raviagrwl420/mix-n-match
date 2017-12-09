@@ -1,24 +1,4 @@
-#define USE_OPENCV_3
-#define _CRT_SECURE_NO_WARNINGS
-
-#include <iostream>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/objdetect.hpp>
-#include <opencv2/ml.hpp>
-#include <string>
-#include <dirent.h>
-
-#define TRAIN_RATIO 0.9
-#define MODEL_1 "model1.yml"
-#define MODEL_2 "model2.yml"
-#define MODEL_3 "model3.yml"
-
-using namespace cv::ml;
-using namespace cv;
-using namespace std;
-
-enum Model {FRONT, SIDE, TOP};
+#include <scorer.h>
 
 vector<pair<Mat, int>> trainData1;
 vector<pair<Mat, int>> trainData2;
@@ -253,7 +233,7 @@ void trainModel (vector<pair<Mat, int>> trainPair, vector<pair<Mat, int>> testPa
 
 	SVMevaluate(testResponse, count, accuracy, testLabels);
 
-	cout << "Accuracy of model: " << modelCount << " : " << accuracy << "%" << endl;
+	cout << "Accuracy of model " << modelCount << ": " << accuracy << "%" << endl;
 
 	modelCount++;
 }
@@ -289,29 +269,3 @@ int predict (Mat view, Model model) {
 
 	return svm->predict(descMat);
 }
-
-int main(int argc, char **argv) {
-	if (argc == 1) {
-		std::string pathPositive = "../training_data/training/positive";
-		std::string pathNegative = "../training_data/training/negative";
-
-		trainAllModels(pathPositive, pathNegative);
-	} else {
-		std::string path = argv[1];
-		Mat img = imread(path.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
-
-		int prediction;
-		if (atoi(path.c_str()) % 3 == 1) {
-			prediction = predict(img, FRONT);
-		} else if (atoi(path.c_str()) % 3 == 2) {
-			prediction = predict(img, SIDE);
-		} else if (atoi(path.c_str()) % 3 == 0) {
-			prediction = predict(img, TOP);
-		}
-		cout << "Prediction: " << prediction << endl;
-	}
-
-	return 0;
-}
-
-
