@@ -32,6 +32,9 @@ class Part : public PartBase {
 public:
 	Mesh mesh;
 	Skeleton skeleton;
+	Line fitLine;
+	Plane fitPlane;
+	Segment fitSegment;
 
 	Part () {};
 	~Part () {};
@@ -55,6 +58,10 @@ Part::Part (string label, Mesh mesh) {
 	boundingBox = CGAL::Polygon_mesh_processing::bbox(mesh,
 		CGAL::Polygon_mesh_processing::parameters::vertex_point_map(mesh.points()).
 		geom_traits(K()));
+
+	this->fitLine = getLeastSquareFitLine(mesh);
+	this->fitPlane = getLeastSquareFitPlane(mesh);
+	this->fitSegment = getLeastSquareFitSegment(mesh);
 
 	try {
 		this->skeleton = getSkeleton(mesh);	
