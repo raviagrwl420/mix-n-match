@@ -33,11 +33,16 @@ typedef CGAL::MP_Float ET;
 #include <CGAL/extract_mean_curvature_flow_skeleton.h>
 #include <CGAL/boost/graph/split_graph_into_polylines.h>
 
+// PCA
+#include <CGAL/linear_least_squares_fitting_3.h>
+
 #include <iostream>
 #include <math.h>
 
 typedef CGAL::Simple_cartesian<double> K;
 typedef K::Point_3 Point;
+typedef K::Line_3 Line;
+typedef K::Plane_3 Plane;
 typedef K::Vector_3 Vector;
 typedef CGAL::Surface_mesh<Point> Mesh;
 typedef Mesh::Vertex_index VertexIndex;
@@ -83,6 +88,18 @@ Skeleton getSkeleton (Mesh mesh) {
 	Skeleton skeleton;
 	CGAL::extract_mean_curvature_flow_skeleton(mesh, skeleton);
 	return skeleton;
+}
+
+Line getLeastSquareFitLine (Mesh mesh) {
+	Line line;
+	linear_least_squares_fitting_3(mesh.points().begin(),mesh.points().end(),line, CGAL::Dimension_tag<0>());
+	return line;
+}
+
+Plane getLeastSquareFitPlane (Mesh mesh) {
+	Plane plane;
+	linear_least_squares_fitting_3(mesh.points().begin(),mesh.points().end(),plane,CGAL::Dimension_tag<0>());
+	return plane;	
 }
 
 #endif
