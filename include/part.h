@@ -74,8 +74,11 @@ Part::Part (string label, Mesh mesh) {
 	}
 
 	bool curved = isSkeletonCurved(skeleton);
+	bool planar = isPlanar(mesh);
 	if (curved) {
 		this->primitive = SKELETON;
+	} else if (planar) {
+		this->primitive = PLANE;
 	} else {
 		this->primitive = LINE;
 	}
@@ -240,6 +243,8 @@ void Part::renderPrimitive () {
 		renderSkeleton(skeleton);
 	if (primitive == LINE)
 		renderSegment(fitSegment);
+	if (primitive == PLANE)
+		renderBoundingBox();
 }
 
 void Part::render (DisplayType displayType) {
