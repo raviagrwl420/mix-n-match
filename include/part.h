@@ -28,6 +28,8 @@ using std::ofstream;
 using std::cerr;
 using std::endl;
 
+enum Primitive {SKELETON, LINE, PLANE};
+
 class Part : public PartBase {
 public:
 	Mesh mesh;
@@ -35,6 +37,7 @@ public:
 	Line fitLine;
 	Plane fitPlane;
 	Segment fitSegment;
+	Primitive primitive;
 
 	Part () {};
 	~Part () {};
@@ -42,6 +45,7 @@ public:
 	static Part* initPart (string label, string filename);
 	void writePart (string filename);
 	void render (DisplayType displayType) override;
+	void renderPrimitive ();
 };
 
 Part::Part (string label, Mesh mesh) {
@@ -64,15 +68,18 @@ Part::Part (string label, Mesh mesh) {
 	this->fitSegment = getLeastSquareFitSegment(mesh);
 
 	try {
-		this->skeleton = getSkeleton(mesh);	
+		this->skeleton = getSkeleton(mesh);
 	} catch (...) {
-		std::cout << "Exception!!" << std::endl; 
+		std::cout << "Exception With Skeleton!!" << std::endl; 
+	}
+
+	bool curved = isSkeletonCurved(skeleton);
+	if (curved) {
+		this->primitive = SKELETON;
+	} else {
+		this->primitive = LINE;
 	}
 	
-
-	std::cout << "Number of vertices of the skeleton: " << boost::num_vertices(skeleton) << "\n";
-	std::cout << "Number of edges of the skeleton: " << boost::num_edges(skeleton) << "\n";
-
 	this->mesh = mesh;
 }
 
@@ -218,6 +225,23 @@ void renderSkeleton (Skeleton skeleton) {
 	glEnd();
 }
 
+void renderSegment (Segment segment) {
+	glBegin(GL_LINES);
+		Point p1 = segment.source();
+		Point p2 = segment.target();
+
+		glVertex3f(p1.x(), p1.y(), p1.z());
+		glVertex3f(p2.x(), p2.y(), p2.z());
+	glEnd();
+}
+
+void Part::renderPrimitive () {
+	if (primitive == SKELETON)
+		renderSkeleton(skeleton);
+	if (primitive == LINE)
+		renderSegment(fitSegment);
+}
+
 void Part::render (DisplayType displayType) {
 	switch (displayType) {
 		case FLAT_SHADED:
@@ -235,8 +259,8 @@ void Part::render (DisplayType displayType) {
 			glPolygonOffset(1.0, 1.0);
 			renderWireframe(mesh);
 			break;
-		case SKELETON:
-			renderSkeleton(skeleton);
+		case PRIMITIVES:
+			renderPrimitive();
 			break;
 	}
 }

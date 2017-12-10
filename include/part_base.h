@@ -18,7 +18,7 @@
 
 using std::string;
 
-enum DisplayType {FLAT_SHADED, SMOOTH_SHADED, WIREFRAME, SHADED_WITH_EDGES, SKELETON};
+enum DisplayType {FLAT_SHADED, SMOOTH_SHADED, WIREFRAME, SHADED_WITH_EDGES, PRIMITIVES};
 
 class PartBase {
 public:
