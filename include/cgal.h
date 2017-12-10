@@ -29,6 +29,10 @@ typedef CGAL::Gmpzf ET;
 typedef CGAL::MP_Float ET;
 #endif
 
+// Skeletonization Package
+#include <CGAL/extract_mean_curvature_flow_skeleton.h>
+#include <CGAL/boost/graph/split_graph_into_polylines.h>
+
 #include <iostream>
 #include <math.h>
 
@@ -44,6 +48,12 @@ typedef CGAL::Bbox_3 BoundingBox;
 // Optimal Distances Package
 typedef CGAL::Polytope_distance_d_traits_3<K, ET, double> Traits;
 typedef CGAL::Polytope_distance_d<Traits> Polytope_distance;
+
+// Skeletonization Package
+typedef CGAL::Mean_curvature_flow_skeletonization<Mesh> Skeletonization;
+typedef Skeletonization::Skeleton Skeleton;
+typedef Skeleton::vertex_descriptor Skeleton_vertex;
+typedef Skeleton::edge_descriptor Skeleton_edge;
 
 double getScale (BoundingBox boundingBox) {
 	double xRange = boundingBox.xmax() - boundingBox.xmin();
@@ -67,6 +77,12 @@ double getMinimumDistance (Mesh mesh1, Mesh mesh2) {
 	Polytope_distance pd(mesh1.points().begin(), mesh1.points().end(), mesh2.points().begin(), mesh2.points().end());
 
 	return sqrt(CGAL::to_double (pd.squared_distance_numerator()) / CGAL::to_double (pd.squared_distance_denominator()));
+}
+
+Skeleton getSkeleton (Mesh mesh) {
+	Skeleton skeleton;
+	CGAL::extract_mean_curvature_flow_skeleton(mesh, skeleton);
+	return skeleton;
 }
 
 #endif
