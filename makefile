@@ -22,7 +22,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CPPFLAGS := -std=c++11 -Wall -w -I $(IDIR) 
 
 # Libraries
-LIB := -lGL -lGLU -lglut -lglui -lCGAL -lboost_system -lboost_filesystem -lGLEW -lOSMesa `pkg-config --cflags --libs opencv` -lgmp
+LIB := -lGL -lGLU -lglut -lglui -lCGAL -lboost_system -lboost_filesystem -lGLEW -lOSMesa `pkg-config --cflags --libs opencv` -lgmp -lmpfr
 
 # Build Executable
 $(TARGET): $(OBJECTS)
