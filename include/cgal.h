@@ -39,7 +39,10 @@ typedef CGAL::MP_Float ET;
 #include <CGAL/Origin.h>
 
 #include <iostream>
+#include <vector>
 #include <math.h>
+
+#define SKELETON_CURVED_THRESHOLD 0.7
 
 typedef CGAL::Simple_cartesian<double> K;
 typedef K::Point_3 Point;
@@ -63,6 +66,26 @@ typedef CGAL::Mean_curvature_flow_skeletonization<Mesh> Skeletonization;
 typedef Skeletonization::Skeleton Skeleton;
 typedef Skeleton::vertex_descriptor Skeleton_vertex;
 typedef Skeleton::edge_descriptor Skeleton_edge;
+
+struct PolyLines {
+	const Skeleton& skeleton;
+	std::vector<Point> points;
+	int polyline_count = 0;
+
+	PolyLines (const Skeleton& skeleton): skeleton(skeleton) {};
+
+	void start_new_polyline () {
+		++polyline_count;
+	}
+
+	void add_node (Skeleton_vertex v) {
+		points.push_back(skeleton[v].point);
+	}
+
+	void end_polyline() {
+
+	}
+};
 
 double getScale (BoundingBox boundingBox) {
 	double xRange = boundingBox.xmax() - boundingBox.xmin();
@@ -92,6 +115,40 @@ Skeleton getSkeleton (Mesh mesh) {
 	Skeleton skeleton;
 	CGAL::extract_mean_curvature_flow_skeleton(mesh, skeleton);
 	return skeleton;
+}
+
+Vector normalize (Vector vec) {
+	return vec / sqrt(vec.squared_length());
+}
+
+bool isSkeletonCurved (Skeleton skeleton) {
+	PolyLines polylines(skeleton);
+	CGAL::split_graph_into_polylines(skeleton, polylines);
+
+	if (polylines.polyline_count != 1) 
+		return false;
+
+	std::vector<Point> points = polylines.points;
+
+	std::cout << "Size:: " << points.size() << std::endl;
+
+	Point start = points[0];
+	Point end = points[points.size() - 1];
+
+	Vector direction = normalize(end - start);
+
+	for (int i = 0; i < points.size()-1; i++) {
+		Point p1 = points[i];
+		Point p2 = points[i+1];
+
+		Vector localDirection = normalize(p2 - p1);
+
+		if (direction * localDirection < SKELETON_CURVED_THRESHOLD) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Line getLeastSquareFitLine (Mesh mesh) {
