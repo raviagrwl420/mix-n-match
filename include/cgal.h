@@ -45,6 +45,7 @@ typedef CGAL::MP_Float ET;
 #define SKELETON_CURVED_THRESHOLD 0.75
 #define PLANAR_LOW_THRESHOLD 0.4
 #define PLANAR_HIGH_THRESHOLD 2.5
+#define CIRCULAR_THRESHOLD 0.05
 
 typedef CGAL::Simple_cartesian<double> K;
 typedef K::Point_3 Point;
@@ -132,8 +133,6 @@ bool isSkeletonCurved (Skeleton skeleton) {
 
 	std::vector<Point> points = polylines.points;
 
-	std::cout << "Size:: " << points.size() << std::endl;
-
 	Point start = points[0];
 	Point end = points[points.size() - 1];
 
@@ -208,7 +207,7 @@ Point getMidPoint (Segment segment) {
 	return s + ((t - s) / 2);
 }
 
-bool isPlanar (Mesh mesh) {
+Segment getSegmentPerpendicularToLeastSquareFit (Mesh mesh) {
 	Segment s1 = getLeastSquareFitSegment(mesh);
 	Point mid = getMidPoint(s1);
 
@@ -223,13 +222,51 @@ bool isPlanar (Mesh mesh) {
 	Vector cross = CGAL::cross_product(vecL, vecP);
 	Line perpendicular = Line(mid, cross);
 
-	Segment s2 = getSegmentProjectionOnALine(mesh, perpendicular);
+	return getSegmentProjectionOnALine(mesh, perpendicular);
+};
+
+bool isPlanar (Mesh mesh) {
+	Segment s1 = getLeastSquareFitSegment(mesh);
+	Segment s2 = getSegmentPerpendicularToLeastSquareFit(mesh);
 	
 	double l1 = sqrt(s1.squared_length());
 	double l2 = sqrt(s2.squared_length());
 	double ratio = l1/l2;
 
 	return PLANAR_LOW_THRESHOLD < ratio && PLANAR_HIGH_THRESHOLD > ratio;
+}
+
+bool isCircular (Mesh mesh) {
+	if (!isPlanar(mesh)) {
+		return false;
+	}
+
+	Plane plane = getLeastSquareFitPlane(mesh);
+	std::vector<Point> projections;
+
+	for (VertexIndex v: mesh.vertices()) {
+		Point p = mesh.point(v);
+		projections.push_back(plane.projection(p));
+	}
+
+	Point centroid = CGAL::centroid(projections.begin(), projections.end(), CGAL::Dimension_tag<0>());
+
+	Segment segment1 = getLeastSquareFitSegment(mesh);
+	double radius1 = sqrt(segment1.squared_length()) / 2;
+
+	Segment segment2 = getSegmentPerpendicularToLeastSquareFit(mesh);
+	double radius2 = sqrt(segment2.squared_length()) / 2;
+
+	double radius = (radius1 + radius2) / 2;
+
+	for (Point p: projections) {
+		Segment newSegment = Segment(centroid, p);
+		double distance = sqrt(newSegment.squared_length());
+		if (distance > radius + CIRCULAR_THRESHOLD)
+			return false;
+	}
+
+	return true;
 }
 
 #endif
