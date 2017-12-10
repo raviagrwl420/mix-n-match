@@ -42,7 +42,9 @@ typedef CGAL::MP_Float ET;
 #include <vector>
 #include <math.h>
 
-#define SKELETON_CURVED_THRESHOLD 0.7
+#define SKELETON_CURVED_THRESHOLD 0.75
+#define PLANAR_LOW_THRESHOLD 0.4
+#define PLANAR_HIGH_THRESHOLD 2.5
 
 typedef CGAL::Simple_cartesian<double> K;
 typedef K::Point_3 Point;
@@ -163,8 +165,7 @@ Plane getLeastSquareFitPlane (Mesh mesh) {
 	return plane;	
 }
 
-Segment getLeastSquareFitSegment (Mesh mesh) {
-	Line l = getLeastSquareFitLine(mesh);
+Segment getSegmentProjectionOnALine (Mesh mesh, Line l) {
 	Vector vec = l.to_vector();
 
 	Origin o;
@@ -192,6 +193,43 @@ Segment getLeastSquareFitSegment (Mesh mesh) {
 	}
 
 	return Segment(l.projection(lowest), l.projection(highest));
+}
+
+Segment getLeastSquareFitSegment (Mesh mesh) {
+	Line l = getLeastSquareFitLine(mesh);
+	
+	return getSegmentProjectionOnALine(mesh, l);
+}
+
+Point getMidPoint (Segment segment) {
+	Point s = segment.source();
+	Point t = segment.target();
+
+	return s + ((t - s) / 2);
+}
+
+bool isPlanar (Mesh mesh) {
+	Segment s1 = getLeastSquareFitSegment(mesh);
+	Point mid = getMidPoint(s1);
+
+	Plane plane = getLeastSquareFitPlane(mesh);
+	
+	Line p = plane.perpendicular_line(mid);
+	Vector vecP = p.to_vector();
+
+	Line l = getLeastSquareFitLine(mesh);
+	Vector vecL = l.to_vector();
+
+	Vector cross = CGAL::cross_product(vecL, vecP);
+	Line perpendicular = Line(mid, cross);
+
+	Segment s2 = getSegmentProjectionOnALine(mesh, perpendicular);
+	
+	double l1 = sqrt(s1.squared_length());
+	double l2 = sqrt(s2.squared_length());
+	double ratio = l1/l2;
+
+	return PLANAR_LOW_THRESHOLD < ratio && PLANAR_HIGH_THRESHOLD > ratio;
 }
 
 #endif
