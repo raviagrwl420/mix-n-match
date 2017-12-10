@@ -31,6 +31,7 @@ using std::endl;
 class Part : public PartBase {
 public:
 	Mesh mesh;
+	Skeleton skeleton;
 
 	Part () {};
 	~Part () {};
@@ -54,6 +55,16 @@ Part::Part (string label, Mesh mesh) {
 	boundingBox = CGAL::Polygon_mesh_processing::bbox(mesh,
 		CGAL::Polygon_mesh_processing::parameters::vertex_point_map(mesh.points()).
 		geom_traits(K()));
+
+	try {
+		this->skeleton = getSkeleton(mesh);	
+	} catch (...) {
+		std::cout << "Exception!!" << std::endl; 
+	}
+	
+
+	std::cout << "Number of vertices of the skeleton: " << boost::num_vertices(skeleton) << "\n";
+	std::cout << "Number of edges of the skeleton: " << boost::num_edges(skeleton) << "\n";
 
 	this->mesh = mesh;
 }
@@ -187,6 +198,19 @@ void renderWireframe(Mesh mesh) {
 	glEnd();
 }
 
+void renderSkeleton (Skeleton skeleton) {
+	glBegin(GL_LINES);
+
+	BOOST_FOREACH(Skeleton_edge e, edges(skeleton)) {
+		const Point& s = skeleton[source(e, skeleton)].point;
+		const Point& t = skeleton[target(e, skeleton)].point;
+		glVertex3f(s.x(), s.y(), s.z());
+		glVertex3f(t.x(), t.y(), t.z());
+	}
+
+	glEnd();
+}
+
 void Part::render (DisplayType displayType) {
 	switch (displayType) {
 		case FLAT_SHADED:
@@ -203,6 +227,9 @@ void Part::render (DisplayType displayType) {
 			glEnable(GL_POLYGON_OFFSET_FILL);
 			glPolygonOffset(1.0, 1.0);
 			renderWireframe(mesh);
+			break;
+		case SKELETON:
+			renderSkeleton(skeleton);
 			break;
 	}
 }
