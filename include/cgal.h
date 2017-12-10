@@ -35,6 +35,8 @@ typedef CGAL::MP_Float ET;
 
 // PCA
 #include <CGAL/linear_least_squares_fitting_3.h>
+#include <CGAL/centroid.h>
+#include <CGAL/Origin.h>
 
 #include <iostream>
 #include <math.h>
@@ -42,6 +44,7 @@ typedef CGAL::MP_Float ET;
 typedef CGAL::Simple_cartesian<double> K;
 typedef K::Point_3 Point;
 typedef K::Line_3 Line;
+typedef K::Segment_3 Segment;
 typedef K::Plane_3 Plane;
 typedef K::Vector_3 Vector;
 typedef CGAL::Surface_mesh<Point> Mesh;
@@ -49,6 +52,7 @@ typedef Mesh::Vertex_index VertexIndex;
 typedef Mesh::Face_index FaceIndex;
 typedef Mesh::Edge_index EdgeIndex;
 typedef CGAL::Bbox_3 BoundingBox;
+typedef CGAL::Origin Origin;
 
 // Optimal Distances Package
 typedef CGAL::Polytope_distance_d_traits_3<K, ET, double> Traits;
@@ -100,6 +104,37 @@ Plane getLeastSquareFitPlane (Mesh mesh) {
 	Plane plane;
 	linear_least_squares_fitting_3(mesh.points().begin(),mesh.points().end(),plane,CGAL::Dimension_tag<0>());
 	return plane;	
+}
+
+Segment getLeastSquareFitSegment (Mesh mesh) {
+	Line l = getLeastSquareFitLine(mesh);
+	Vector vec = l.to_vector();
+
+	Origin o;
+	Point centroid = CGAL::centroid(mesh.points().begin(), mesh.points().end(), CGAL::Dimension_tag<0>());
+
+	Point lowest = centroid;
+	Point highest = centroid;
+
+	Vector lowestVec = centroid - o;
+	Vector highestVec = centroid - o;
+
+	for (VertexIndex v: mesh.vertices()) {
+		Point p = mesh.point(v);
+		Vector newVec = p - o;
+
+		if (vec * newVec < vec * lowestVec) {
+			lowestVec = newVec;
+			lowest = p;
+		}
+
+		if (vec * newVec > vec * highestVec) {
+			highestVec = newVec;
+			highest = p;
+		}
+	}
+
+	return Segment(l.projection(lowest), l.projection(highest));
 }
 
 #endif
