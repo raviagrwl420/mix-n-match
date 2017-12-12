@@ -9,6 +9,9 @@
 #include <string>
 #include <dirent.h>
 
+#include <cgal.h>
+#include <off_screen_renderer.h>
+
 #define TRAIN_RATIO 0.9
 #define MODEL_1 "model1.yml"
 #define MODEL_2 "model2.yml"
@@ -18,7 +21,7 @@ using namespace cv::ml;
 using namespace cv;
 using namespace std;
 
-enum Model {FRONT, SIDE, TOP};
-
 void trainAllModels (string pathPositive, string pathNegative);
-int predict (Mat view, Model model);
+int predict (Mat projection, View view);
+int predict (PartBase *part, View view);
+int isPlausible (PartBase *part);

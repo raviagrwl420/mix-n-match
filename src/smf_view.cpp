@@ -7,6 +7,8 @@
 	@brief		CMPT-764: Assignment 2, Implements SMF viewer.
 */
 
+#include <gl.h>
+
 #include <GL/glut.h>
 #include <GL/glui.h>
 

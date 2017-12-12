@@ -39,57 +39,10 @@ public:
 
 	virtual void render (DisplayType displayType) {};
 
+	virtual void renderForProjection (double scale, Vector center) {};
+
 	void renderBoundingBox ();
 	Vector getCenter ();
 };
-
-void PartBase::renderBoundingBox () {
-	glBegin(GL_LINES);
-		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmin());
-		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmin());
-
-		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmin());
-		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmin());
-
-		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmin());
-		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmin());
-
-		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmin());
-		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmin());
-
-
-		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmin());
-		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmax());
-
-		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmin());
-		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmax());
-
-		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmin());
-		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmax());
-
-		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmin());
-		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmax());
-
-
-		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmax());
-		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmax());
-
-		glVertex3f(boundingBox.xmax(), boundingBox.ymin(), boundingBox.zmax());
-		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmax());
-
-		glVertex3f(boundingBox.xmax(), boundingBox.ymax(), boundingBox.zmax());
-		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmax());
-
-		glVertex3f(boundingBox.xmin(), boundingBox.ymax(), boundingBox.zmax());
-		glVertex3f(boundingBox.xmin(), boundingBox.ymin(), boundingBox.zmax());
-	glEnd();
-}
-
-Vector PartBase::getCenter () {
-	double x = (boundingBox.xmin() + boundingBox.xmax())/2;
-	double y = (boundingBox.ymin() + boundingBox.ymax())/2;
-	double z = (boundingBox.zmin() + boundingBox.zmax())/2;
-	return Vector(x, y, z);
-}
 
 #endif

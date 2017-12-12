@@ -29,6 +29,7 @@ public:
 
 	void addMember (PartBase *member);
 	void render (DisplayType displayType) override;
+	void renderForProjection (double scale, Vector center) override;
 
 	PartBase *getMember (string label);
 	void setMember (string label, PartBase *member);
@@ -57,6 +58,14 @@ void Group::render (DisplayType displayType) {
 
 		member->render(displayType);
 	}
+}
+
+void Group::renderForProjection (double scale, Vector center) {
+	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
+		PartBase* member = *it;
+
+		member->renderForProjection(scale, center);
+	}	
 }
 
 PartBase *Group::getMember (string label) {
