@@ -38,6 +38,9 @@ typedef CGAL::MP_Float ET;
 #include <CGAL/centroid.h>
 #include <CGAL/Origin.h>
 
+// Transformations
+#include <CGAL/Aff_transformation_3.h>
+
 #include <iostream>
 #include <vector>
 #include <math.h>
@@ -69,6 +72,9 @@ typedef CGAL::Mean_curvature_flow_skeletonization<Mesh> Skeletonization;
 typedef Skeletonization::Skeleton Skeleton;
 typedef Skeleton::vertex_descriptor Skeleton_vertex;
 typedef Skeleton::edge_descriptor Skeleton_edge;
+
+// Transformation
+typedef CGAL::Aff_transformation_3<K> Transformation;
 
 struct PolyLines {
 	const Skeleton& skeleton;
