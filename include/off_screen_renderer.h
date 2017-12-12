@@ -27,7 +27,7 @@ namespace OffScreenRenderer {
 
 	inline unsigned char *render(Mesh mesh, Vector cam, int total, bool inverse, double maxD);
 
-	unsigned char *getView (Mesh mesh, View view);
+	unsigned char *getProjection (Mesh mesh, View view);
 }
 
 #endif

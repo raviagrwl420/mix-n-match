@@ -148,7 +148,7 @@ namespace OffScreenRenderer {
 		return Pixels;
 	}
 
-	unsigned char *getView (Mesh mesh, View view) {
+	unsigned char *getProjection (Mesh mesh, View view) {
 		Vector cam;
 		bool inverse = false; 
 		switch(view) {

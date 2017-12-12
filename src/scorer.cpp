@@ -246,26 +246,49 @@ void trainAllModels (string pathPositive, string pathNegative) {
 	trainModel(trainData3, testData3, MODEL_3);
 }
 
-int predict (Mat view, Model model) {
+int predict (Mat projection, View view) {
 	Ptr<SVM> svm;
-	switch (model) {
-		case FRONT:
+	switch (view) {
+		case SIDE:
 			svm = Algorithm::load<SVM>(MODEL_1); 
 			break;
-		case SIDE:
+		case TOP:
 			svm = Algorithm::load<SVM>(MODEL_2);
 			break;
-		case TOP:
+		case FRONT:
 			svm = Algorithm::load<SVM>(MODEL_3);
 			break;
 	}
 
 	vector<float> descriptors;
-	hog.compute(view, descriptors);
+	hog.compute(projection, descriptors);
+
 	Mat descMat(1, descriptors.size(), CV_32FC1);
 	for(int j = 0; j < descriptors.size(); j++){
 		descMat.at<float>(0, j) = descriptors[j]; 
 	}
 
+	float raw = svm->predict(descMat, cv::noArray(), cv::ml::StatModel::RAW_OUTPUT);
+
 	return svm->predict(descMat);
+}
+
+int predict (Mesh mesh, View view) {
+	unsigned char *projection = OffScreenRenderer::getProjection(mesh, view);
+	Mat projectionMatrix(WIDTH, HEIGHT, CV_8UC1);
+
+	for (int i = HEIGHT - 1; i >= 0; i--) {
+		for (int j = 0; j < WIDTH; j++) {
+			int index = i*WIDTH + j;
+			int x = HEIGHT - 1 - i;
+			int y = j;
+			projectionMatrix.at<uchar>(x, y) = projection[index];
+		}
+	}
+
+	int prediction = predict(projectionMatrix, view);
+}
+
+int isPlausible (Mesh mesh) {
+	return predict(mesh, SIDE) + predict(mesh, TOP) + predict(mesh, FRONT);
 }
