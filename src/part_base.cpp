@@ -73,5 +73,10 @@ float *PartBase::getTransformationArray () {
 
 void PartBase::translate (Vector vec) {
 	Transformation translation(CGAL::TRANSLATION, vec);
-	transformation = translation*transformation;
+	transformation = transformation*translation;
+}
+
+void PartBase::scale (float s) {
+	Transformation scaling(CGAL::SCALING, s);
+	transformation = transformation*scaling;
 }

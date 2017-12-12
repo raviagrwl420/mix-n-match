@@ -50,6 +50,8 @@ public:
 	float *getTransformationArray ();
 
 	void translate (Vector vec);
+
+	void scale (float s);
 };
 
 #endif
