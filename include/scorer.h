@@ -23,5 +23,5 @@ using namespace std;
 
 void trainAllModels (string pathPositive, string pathNegative);
 int predict (Mat projection, View view);
-int predict (Mesh mesh, View view);
-int isPlausible (Mesh mesh);
+int predict (PartBase *part, View view);
+int isPlausible (PartBase *part);

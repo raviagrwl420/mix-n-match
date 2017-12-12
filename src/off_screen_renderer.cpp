@@ -1,7 +1,7 @@
 #include <off_screen_renderer.h>
 
 namespace OffScreenRenderer {
-	inline void mGLRender(Mesh mesh, Vector cam, int total = -1, bool inverse = false, double maxD = -1) {
+	inline void mGLRender(PartBase *part, Vector cam, int total = -1, bool inverse = false, double maxD = -1) {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		
@@ -16,12 +16,9 @@ namespace OffScreenRenderer {
 		glPushMatrix();
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
-		glBegin(GL_TRIANGLES);
-
+		
 		// Render Mesh
-		auto boundingBox = CGAL::Polygon_mesh_processing::bbox(mesh,
-			CGAL::Polygon_mesh_processing::parameters::vertex_point_map(mesh.points()).
-			geom_traits(K()));		
+		auto boundingBox = part->boundingBox;		
 
 		double scale = 0;
 		if (maxD == -1) {
@@ -29,17 +26,14 @@ namespace OffScreenRenderer {
 		} else {
 			scale = maxD;
 		}
+		Vector center = getCenter(boundingBox);
 
-		for (FaceIndex f: faces(mesh)) {
-			for (VertexIndex v: vertices_around_face(mesh.halfedge(f), mesh)) {
-				Vector point(mesh.point(v).x(), mesh.point(v).y(), mesh.point(v).z());
-				point -= getCenter(boundingBox);
-				point *= 1.2f / scale;
-				glVertex3f(point.x(), point.y(), point.z());
-			}
-		}
+		glBegin(GL_TRIANGLES);
+
+			part->renderForProjection(scale, center);
 
 		glEnd();
+
 		glFlush(); // remember to flush GL output!
 		glFinish();					
 	}
@@ -92,7 +86,7 @@ namespace OffScreenRenderer {
 		return Pixels;
 	}
 
-	inline unsigned char *render(Mesh mesh, Vector cam, int total = -1, bool inverse = false, double maxD = -1) {
+	inline unsigned char *render(PartBase *part, Vector cam, int total = -1, bool inverse = false, double maxD = -1) {
 		int Width = 224;
 		int Height = 224;
 
@@ -127,7 +121,7 @@ namespace OffScreenRenderer {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		gluLookAt(1, 0, 0, 0, 0, 0, 0, 1, 0);
-		mGLRender(mesh, cam, total, inverse, maxD);
+		mGLRender(part, cam, total, inverse, maxD);
 		
 		void **depthBuffer = (void**) malloc( WIDTH * HEIGHT * z * sizeof(GLubyte) );
 		if (!depthBuffer) {
@@ -148,7 +142,7 @@ namespace OffScreenRenderer {
 		return Pixels;
 	}
 
-	unsigned char *getProjection (Mesh mesh, View view) {
+	unsigned char *getProjection (PartBase *part, View view) {
 		Vector cam;
 		bool inverse = false; 
 		switch(view) {
@@ -167,6 +161,6 @@ namespace OffScreenRenderer {
 				break;
 		}
 
-		return render(mesh, cam, NULL, inverse);
+		return render(part, cam, NULL, inverse);
 	}
 }

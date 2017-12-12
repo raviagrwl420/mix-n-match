@@ -38,6 +38,7 @@ public:
 	static Part* initPart (string label, string filename);
 	void writePart (string filename);
 	void render (DisplayType displayType) override;
+	void renderForProjection (double scale, Vector center) override;
 };
 
 Part::Part (string label, Mesh mesh) {
@@ -205,6 +206,21 @@ void Part::render (DisplayType displayType) {
 			renderWireframe(mesh);
 			break;
 	}
+}
+
+void Part::renderForProjection (double scale, Vector center) {
+	glBegin(GL_TRIANGLES);
+
+		for (FaceIndex f: faces(mesh)) {
+			for (VertexIndex v: vertices_around_face(mesh.halfedge(f), mesh)) {
+				Vector point(mesh.point(v).x(), mesh.point(v).y(), mesh.point(v).z());
+				point -= center;
+				point *= 1.2f / scale;
+				glVertex3f(point.x(), point.y(), point.z());
+			}
+		}
+
+	glEnd();
 }
 
 #endif

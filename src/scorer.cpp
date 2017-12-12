@@ -273,8 +273,8 @@ int predict (Mat projection, View view) {
 	return svm->predict(descMat);
 }
 
-int predict (Mesh mesh, View view) {
-	unsigned char *projection = OffScreenRenderer::getProjection(mesh, view);
+int predict (PartBase *part, View view) {
+	unsigned char *projection = OffScreenRenderer::getProjection(part, view);
 	Mat projectionMatrix(WIDTH, HEIGHT, CV_8UC1);
 
 	for (int i = HEIGHT - 1; i >= 0; i--) {
@@ -289,6 +289,6 @@ int predict (Mesh mesh, View view) {
 	int prediction = predict(projectionMatrix, view);
 }
 
-int isPlausible (Mesh mesh) {
-	return predict(mesh, SIDE) + predict(mesh, TOP) + predict(mesh, FRONT);
+int isPlausible (PartBase *part) {
+	return predict(part, SIDE) + predict(part, TOP) + predict(part, FRONT);
 }
