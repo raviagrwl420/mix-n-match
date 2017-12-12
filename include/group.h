@@ -51,7 +51,7 @@ void Group::addMember (PartBase *member) {
 }
 
 void Group::render (DisplayType displayType) {
-	renderBoundingBox();
+	// renderBoundingBox();
 	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
 		PartBase* member = *it;
 

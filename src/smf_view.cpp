@@ -82,8 +82,13 @@ void displayAxes () {
 	glEnd();
 }
 
+Part *part;
+
 // Display mesh function
 void displayMesh (void) {
+	if (part != NULL)
+		part->render((DisplayType) displayType);
+
 	// for (PartBase *chair : chairs) {
 	// 	chair->render((DisplayType) displayType);
 	// }
@@ -154,6 +159,7 @@ void control_cb(int control) {
 			// Remove the newline character at the end
 			inputFilePath = inputFilePath.substr(0, inputFilePath.size() - 1);
 			if (inputFilePath.size() != 0) {
+				part = Part::initPart("Test", inputFilePath);
 			}
 			break;
 		}
@@ -263,6 +269,7 @@ void setupGlui () {
 	listbox->add_item(SMOOTH_SHADED, "Smooth Shaded");
 	listbox->add_item(WIREFRAME, "Wireframe");
 	listbox->add_item(SHADED_WITH_EDGES, "Shaded with Edges");
+	listbox->add_item(PRIMITIVES, "Primitives");
 
 	// Add Scale Spinner
 	GLUI_Spinner *scale_spinner = new GLUI_Spinner(transformationsPanel, "Scale:", &scale);
