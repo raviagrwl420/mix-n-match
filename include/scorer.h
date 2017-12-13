@@ -22,6 +22,6 @@ using namespace cv;
 using namespace std;
 
 void trainAllModels (string pathPositive, string pathNegative);
-int predict (Mat projection, View view);
-int predict (PartBase *part, View view);
+float predict (Mat projection, View view);
+float predict (PartBase *part, View view);
 int isPlausible (PartBase *part);

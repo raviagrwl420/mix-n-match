@@ -21,6 +21,7 @@
 #include <part.h>
 #include <group.h>
 #include <scorer.h>
+#include <cgal.h>
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -36,6 +37,12 @@ PartBase *chair;
 
 PartBase *chairA;
 PartBase *chairB;
+
+Part *part;
+Part *part2;
+
+PartBase *g1;
+PartBase *g2;
 
 float xy_aspect;
 int last_x, last_y;
@@ -84,13 +91,8 @@ void displayAxes () {
 	glEnd();
 }
 
-Part *part;
-
 // Display mesh function
 void displayMesh (void) {
-	if (part != NULL)
-		part->render((DisplayType) displayType);
-
 	// for (PartBase *chair : chairs) {
 	// 	chair->render((DisplayType) displayType);
 	// }
@@ -199,6 +201,25 @@ GLUI_Rotation *chairRotB;
 int chairAIndex;
 int chairBIndex;
 
+void swap (PartBase *chairA, PartBase *chairB, string GroupName) {
+	g1 = chairA->getMember(GroupName);
+	g2 = chairB->getMember(GroupName);
+
+	Group *group1 = (Group*) g1;
+	Group *group2 = (Group*) g2; 
+
+	for (PartBase *p1: group1->members) {
+		for (PartBase *p2: group2->members) {
+			Part *part1 = (Part*) p1;
+			Part *part2 = (Part*) p2;
+			float hausdorffDistance = getHausdorffDistance(part1->mesh, part2->mesh);
+			if (hausdorffDistance < 0.25) {
+				part2->applyTransformation(getTransformation(part1->fitSegment, part2->fitSegment));		
+			}
+		}
+	}
+}
+
 // GLUI chair callback
 void chair_cb (int control) {
 	if (control == CHAIR_A) {
@@ -206,23 +227,42 @@ void chair_cb (int control) {
 	} else if (control == CHAIR_B) {
 		chairB = chairs[chairBIndex];
 	} else if (control == SWAP_LEGS) {
-		PartBase *legA = chairA->getMember("Group")->getMember("Leg");
-		PartBase *legB = chairB->getMember("Group")->getMember("Leg");
+		PartBase *legA = chairA->getMember("Leg");
+		PartBase *legB = chairB->getMember("Leg");
+		swap(chairA, chairB, "Leg");
 
-		chairA->getMember("Group")->setMember("Leg", legB);
-		chairB->getMember("Group")->setMember("Leg", legA);
+		chairA->setMember("Leg", legB);
+		chairB->setMember("Leg", legA);
+
+		std::cout << "Check if ChairA plausible? " << std::endl;
+		int isPlausibleChairA = isPlausible(chairA);
+		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
+		int isPlausibleChairB = isPlausible(chairB);
+		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
 	} else if (control == SWAP_BACK) {
-		PartBase *backA = chairA->getMember("Group")->getMember("Back");
-		PartBase *backB = chairB->getMember("Group")->getMember("Back");
+		PartBase *backA = chairA->getMember("Back");
+		PartBase *backB = chairB->getMember("Back");
+		swap(chairA, chairB, "Back");
 
-		chairA->getMember("Group")->setMember("Back", backB);
-		chairB->getMember("Group")->setMember("Back", backA);
+		chairA->setMember("Back", backB);
+		chairB->setMember("Back", backA);
+
+		int isPlausibleChairA = isPlausible(chairA);
+		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
+		int isPlausibleChairB = isPlausible(chairB);
+		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
 	} else if (control == SWAP_SEAT) {
-		PartBase *seatA = chairA->getMember("Group")->getMember("Seat");
-		PartBase *seatB = chairB->getMember("Group")->getMember("Seat");
+		PartBase *seatA = chairA->getMember("Seat");
+		PartBase *seatB = chairB->getMember("Seat");
+		swap(chairA, chairB, "Seat");
 
-		chairA->getMember("Group")->setMember("Seat", seatB);
-		chairB->getMember("Group")->setMember("Seat", seatA);
+		chairA->setMember("Seat", seatB);
+		chairB->setMember("Seat", seatA);
+
+		int isPlausibleChairA = isPlausible(chairA);
+		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
+		int isPlausibleChairB = isPlausible(chairB);
+		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
 	}
 }
 
