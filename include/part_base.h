@@ -49,6 +49,8 @@ public:
 	// Transformations
 	float *getTransformationArray ();
 
+	void applyTransformation (Transformation transform);
+
 	void translate (Vector vec);
 
 	void scale (float s);
