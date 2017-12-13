@@ -48,6 +48,8 @@ public:
 	void renderForProjection (double scale, Vector center) override;
 
 	void renderPrimitive ();
+	
+	PartBase* make_copy();
 };
 
 #endif

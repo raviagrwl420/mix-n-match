@@ -46,6 +46,14 @@ public:
 
 	Vector getCenter ();
 
+	virtual PartBase *getMemberGlobally (string label) {};
+	virtual PartBase *getParentGlobally (string label) {};
+	virtual PartBase* make_copy() {};
+	virtual bool removeMember(string label1) {};
+	// i.e. replace the object with "label1" from part1 with the object with "label2" from part2
+	virtual bool replace(string label1, PartBase *part2, string label2) {};
+	virtual bool swap(string label1, PartBase *part2, string label2) {};
+
 	// Transformations
 	float *getTransformationArray ();
 
