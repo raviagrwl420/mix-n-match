@@ -44,6 +44,7 @@ public:
 	Part (string label, Mesh mesh);
 	static Part* initPart (string label, string filename);
 	void writePart (string filename);
+	int writeToFile (ofstream& smf_file, int vertexStartIndex, Transformation t) override;
 	void render (DisplayType displayType) override;
 	void renderForProjection (double scale, Vector center) override;
 

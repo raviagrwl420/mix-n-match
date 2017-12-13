@@ -10,12 +10,14 @@
 #ifndef PART_BASE_H
 #define PART_BASE_H
 
+#include <fstream>
 #include <string>
 
 #include <GL/glut.h>
 
 #include <cgal.h>
 
+using std::ofstream;
 using std::string;
 
 enum DisplayType {FLAT_SHADED, SMOOTH_SHADED, WIREFRAME, SHADED_WITH_EDGES, PRIMITIVES};
@@ -37,6 +39,8 @@ public:
 	virtual PartBase *getMember (string label) {};
 
 	virtual void setMember (string label, PartBase *part) {};
+
+	virtual int writeToFile (ofstream& smf_file, int vertexStartIndex, Transformation t) {};
 
 	virtual void render (DisplayType displayType) {};
 

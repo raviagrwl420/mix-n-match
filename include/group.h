@@ -30,6 +30,8 @@ public:
 	void addMember (PartBase *member);
 	void render (DisplayType displayType) override;
 	void renderForProjection (double scale, Vector center) override;
+	int writeToFile (ofstream& smf_file, int vertexStartIndex, Transformation t) override;
+	void startWriteToFile (string filename);
 
 	PartBase *getMember (string label);
 	void setMember (string label, PartBase *member);
@@ -88,6 +90,29 @@ PartBase *Group::getMember (string label) {
 void Group::setMember (string label, PartBase *member) {
 	if (labelIndexMap.count(label) > 0)
 		members[labelIndexMap[label]] = member;
+}
+
+int Group::writeToFile (ofstream& smf_file, int vertexStartIndex, Transformation t) {
+	Transformation total_transformation = transformation * t;
+
+	int vertexIndex = vertexStartIndex;	
+	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
+		PartBase* member = *it;
+
+		vertexIndex = member->writeToFile(smf_file, vertexIndex, total_transformation);
+	}
+
+	return vertexIndex;
+}
+
+void Group::startWriteToFile (string filename) {
+	ofstream smf_file;
+	smf_file.open(filename.c_str());
+
+	writeToFile(smf_file, 1, transformation);
+
+	smf_file.close();
+
 }
 
 #endif
