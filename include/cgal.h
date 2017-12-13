@@ -146,6 +146,8 @@ float isEndToEndConnected (Segment s1, Segment s2);
 
 Transformation getTransformation (Segment s1, Segment s2);
 
+Transformation getTransformation (BoundingBox box1, BoundingBox box2);
+
 Transformation getRotationMatrix (Vector v1, Vector v2);
 
 #endif

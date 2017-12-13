@@ -18,6 +18,11 @@ Vector getCenter (BoundingBox boundingBox) {
 	return Vector(x, y, z);
 }
 
+Point getCenterPoint (BoundingBox boundingBox) {
+	Vector center = getCenter(boundingBox);
+	return Point(center.x(), center.y(), center.z());
+}
+
 double getMinimumDistance (Mesh mesh1, Mesh mesh2) {
 	Polytope_distance pd(mesh1.points().begin(), mesh1.points().end(), mesh2.points().begin(), mesh2.points().end());
 
@@ -215,6 +220,27 @@ Transformation getTransformation (Segment s1, Segment s2) {
 	Transformation translation2(CGAL::TRANSLATION, translateToMidPoint1);
 
 	return translation2*rotation*scale*translation1;
+};
+
+Transformation getTransformation (BoundingBox box1, BoundingBox box2) {
+	Origin o;
+	Point m1 = getCenterPoint(box1);
+	Point m2 = getCenterPoint(box2);
+
+	// Translate to mid point
+	Vector translateToOrigin = o - m2;
+	Transformation translation1(CGAL::TRANSLATION, translateToOrigin);
+
+	// Scale
+	float s1 = getScale(box1);
+	float s2 = getScale(box2);
+	Transformation scale(CGAL::SCALING, sqrt(s1/s2));
+
+	// Translation
+	Vector translateToMidPoint1 = m1 - o; 
+	Transformation translation2(CGAL::TRANSLATION, translateToMidPoint1);
+
+	return translation2*scale*translation1;
 };
 
 Transformation getRotationMatrix (Vector v1, Vector v2) {
