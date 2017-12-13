@@ -178,3 +178,20 @@ bool isCircular (Mesh mesh) {
 
 	return true;
 }
+
+float getHausdorffDistance (Mesh m1, Mesh m2) {
+	return CGAL::Polygon_mesh_processing::approximate_Hausdorff_distance<TAG>(m1, m2, 
+		CGAL::Polygon_mesh_processing::parameters::vertex_point_map(m1.points()),
+		CGAL::Polygon_mesh_processing::parameters::vertex_point_map(m2.points()));
+};
+
+Transformation getTransformation (Segment s1, Segment s2) {
+	Point m1 = getMidPoint(s1);
+	Point m2 = getMidPoint(s2);
+
+	Vector translationVec = m1 - m2; 
+
+	Transformation translation(CGAL::TRANSLATION, translationVec);
+
+	return translation;
+};

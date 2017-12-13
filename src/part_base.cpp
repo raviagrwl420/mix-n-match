@@ -57,3 +57,30 @@ Vector PartBase::getCenter () {
 	double z = (boundingBox.zmin() + boundingBox.zmax())/2;
 	return Vector(x, y, z);
 }
+
+float *PartBase::getTransformationArray () {
+	float *transformationArray = new float[16];
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			int index = 4*j + i;
+			transformationArray[index] = transformation.m(i, j);
+		}
+	}
+
+	return transformationArray;
+}
+
+void PartBase::applyTransformation (Transformation transform) {
+	transformation = transformation*transform;
+}
+
+void PartBase::translate (Vector vec) {
+	Transformation translation(CGAL::TRANSLATION, vec);
+	transformation = transformation*translation;
+}
+
+void PartBase::scale (float s) {
+	Transformation scaling(CGAL::SCALING, s);
+	transformation = transformation*scaling;
+}

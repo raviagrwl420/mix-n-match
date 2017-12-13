@@ -246,17 +246,20 @@ void trainAllModels (string pathPositive, string pathNegative) {
 	trainModel(trainData3, testData3, MODEL_3);
 }
 
-int predict (Mat projection, View view) {
+float predict (Mat projection, View view) {
 	Ptr<SVM> svm;
 	switch (view) {
 		case SIDE:
-			svm = Algorithm::load<SVM>(MODEL_1); 
+			svm = Algorithm::load<SVM>(MODEL_1);
+			std::cout << "SIDE: ";
 			break;
 		case TOP:
 			svm = Algorithm::load<SVM>(MODEL_2);
+			std::cout << "TOP: ";
 			break;
 		case FRONT:
 			svm = Algorithm::load<SVM>(MODEL_3);
+			std::cout << "FRONT: ";
 			break;
 	}
 
@@ -270,10 +273,12 @@ int predict (Mat projection, View view) {
 
 	float raw = svm->predict(descMat, cv::noArray(), cv::ml::StatModel::RAW_OUTPUT);
 
-	return svm->predict(descMat);
+	std::cout << raw << std::endl;
+
+	return raw;
 }
 
-int predict (PartBase *part, View view) {
+float predict (PartBase *part, View view) {
 	unsigned char *projection = OffScreenRenderer::getProjection(part, view);
 	Mat projectionMatrix(WIDTH, HEIGHT, CV_8UC1);
 
@@ -286,9 +291,16 @@ int predict (PartBase *part, View view) {
 		}
 	}
 
-	int prediction = predict(projectionMatrix, view);
+	float prediction = predict(projectionMatrix, view);
+	return prediction;
 }
 
 int isPlausible (PartBase *part) {
-	return predict(part, SIDE) + predict(part, TOP) + predict(part, FRONT);
+	float prediction1 = predict(part, SIDE);
+	float prediction2 = predict(part, TOP);
+	float prediction3 = predict(part, FRONT);
+	float max = prediction1 > prediction2 ? prediction1 : prediction2;
+	max = max > prediction3 ? max : prediction3;
+
+	return max < -0.5;
 }

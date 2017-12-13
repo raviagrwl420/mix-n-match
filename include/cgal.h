@@ -38,6 +38,18 @@ typedef CGAL::MP_Float ET;
 #include <CGAL/centroid.h>
 #include <CGAL/Origin.h>
 
+// Transformations
+#include <CGAL/Aff_transformation_3.h>
+
+// Hausdorff Distance
+#include <CGAL/Polygon_mesh_processing/distance.h>
+
+#if defined(CGAL_LINKED_WITH_TBB)
+#define TAG CGAL::Parallel_tag
+#else
+#define TAG CGAL::Sequential_tag
+#endif
+
 #include <iostream>
 #include <vector>
 #include <math.h>
@@ -46,6 +58,10 @@ typedef CGAL::MP_Float ET;
 #define PLANAR_LOW_THRESHOLD 0.4
 #define PLANAR_HIGH_THRESHOLD 2.5
 #define CIRCULAR_THRESHOLD 0.05
+#define END_TO_END_CONNECTIVITY_THRESHOLD 0.05
+#define END_TO_LINE_CONNECTIVITY_THRESHOLD 0.05
+#define END_TO_PLANE_CONNECTIVITY_THRESHOLD 0.05
+#define LINE_TO_PLANE_CONNECTIVITY_THRESHOLD 0.05 
 
 typedef CGAL::Simple_cartesian<double> K;
 typedef K::Point_3 Point;
@@ -69,6 +85,9 @@ typedef CGAL::Mean_curvature_flow_skeletonization<Mesh> Skeletonization;
 typedef Skeletonization::Skeleton Skeleton;
 typedef Skeleton::vertex_descriptor Skeleton_vertex;
 typedef Skeleton::edge_descriptor Skeleton_edge;
+
+// Transformation
+typedef CGAL::Aff_transformation_3<K> Transformation;
 
 struct PolyLines {
 	const Skeleton& skeleton;
@@ -117,5 +136,11 @@ Segment getSegmentPerpendicularToLeastSquareFit (Mesh mesh);
 bool isPlanar (Mesh mesh);
 
 bool isCircular (Mesh mesh);
+
+float getHausdorffDistance (Mesh m1, Mesh m2);
+
+float isEndToEndConnected (Segment s1, Segment s2);
+
+Transformation getTransformation (Segment s1, Segment s2);
 
 #endif

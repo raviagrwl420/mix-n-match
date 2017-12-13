@@ -53,19 +53,29 @@ void Group::addMember (PartBase *member) {
 
 void Group::render (DisplayType displayType) {
 	// renderBoundingBox();
+	glPushMatrix();
+	glMultMatrixf(getTransformationArray());
+
 	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
 		PartBase* member = *it;
 
 		member->render(displayType);
 	}
+
+	glPopMatrix();
 }
 
 void Group::renderForProjection (double scale, Vector center) {
+	glPushMatrix();
+	glMultMatrixf(getTransformationArray());
+
 	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
 		PartBase* member = *it;
 
 		member->renderForProjection(scale, center);
-	}	
+	}
+
+	glPopMatrix();
 }
 
 PartBase *Group::getMember (string label) {

@@ -25,6 +25,7 @@ public:
 	string label;
 	Vector color;
 	BoundingBox boundingBox;
+	Transformation transformation;
 
 	PartBase () {};
 	~PartBase () {};
@@ -42,7 +43,17 @@ public:
 	virtual void renderForProjection (double scale, Vector center) {};
 
 	void renderBoundingBox ();
+
 	Vector getCenter ();
+
+	// Transformations
+	float *getTransformationArray ();
+
+	void applyTransformation (Transformation transform);
+
+	void translate (Vector vec);
+
+	void scale (float s);
 };
 
 #endif
