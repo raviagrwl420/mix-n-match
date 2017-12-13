@@ -30,13 +30,17 @@ Part::Part (string label, Mesh mesh) {
 	this->fitPlane = getLeastSquareFitPlane(mesh);
 	this->fitSegment = getLeastSquareFitSegment(mesh);
 
-	try {
-		this->skeleton = getSkeleton(mesh);
-	} catch (...) {
-		std::cout << "Exception With Skeleton!!" << std::endl; 
+	bool curved = false;
+	if (label != string("LegFrontLeft") && label != string("LegFrontRight") && label != string("RightBar") && label != string("LeftBar")) {
+		try {
+			this->skeleton = getSkeleton(mesh);
+		} catch (...) {
+			std::cout << "Exception With Skeleton!!" << std::endl; 
+		}
+
+		curved = isSkeletonCurved(skeleton);
 	}
 
-	bool curved = isSkeletonCurved(skeleton);
 	bool planar = isPlanar(mesh);
 	if (curved) {
 		this->primitive = SKELETON;
