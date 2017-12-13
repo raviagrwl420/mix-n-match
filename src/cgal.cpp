@@ -104,6 +104,14 @@ Segment getSegmentProjectionOnALine (Mesh mesh, Line l) {
 	return Segment(l.projection(lowest), l.projection(highest));
 }
 
+Segment orientSegment (Segment s) {
+	if (s.target().z() > s.source().z()) {
+		return s;
+	} else {
+		return Segment(s.target(), s.source());
+	}
+}
+
 Segment getLeastSquareFitSegment (Mesh mesh) {
 	Line l = getLeastSquareFitLine(mesh);
 	
@@ -186,12 +194,34 @@ float getHausdorffDistance (Mesh m1, Mesh m2) {
 };
 
 Transformation getTransformation (Segment s1, Segment s2) {
+	Origin o;
 	Point m1 = getMidPoint(s1);
 	Point m2 = getMidPoint(s2);
 
-	Vector translationVec = m1 - m2; 
+	// Translate to mid point
+	Vector translateToOrigin = o - m2;
+	Transformation translation1(CGAL::TRANSLATION, translateToOrigin);
 
-	Transformation translation(CGAL::TRANSLATION, translationVec);
+	// Scale
+	Transformation scale(CGAL::SCALING, sqrt(s1.squared_length()/s2.squared_length()));
 
-	return translation;
+	// Rotation
+	Vector v1 = s1.to_vector();
+	Vector v2 = s2.to_vector();
+	Transformation rotation = getRotationMatrix(v1, v2);
+
+	// Translation
+	Vector translateToMidPoint1 = m1 - o; 
+	Transformation translation2(CGAL::TRANSLATION, translateToMidPoint1);
+
+	return translation2*rotation*scale*translation1;
+};
+
+Transformation getRotationMatrix (Vector v1, Vector v2) {
+	Eigen::Vector3f A(v1.x(), v1.y(), v1.z());
+	Eigen::Vector3f B(v2.x(), v2.y(), v2.z());
+
+	Eigen::Matrix3f R = Eigen::Quaternionf().setFromTwoVectors(A,B).toRotationMatrix();
+
+	return Transformation(R(0,0), R(1,0), R(2,0), R(0,1), R(1,1), R(2,1), R(0,2), R(1,2), R(2,2), 1);
 };

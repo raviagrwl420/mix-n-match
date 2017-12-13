@@ -50,6 +50,9 @@ typedef CGAL::MP_Float ET;
 #define TAG CGAL::Sequential_tag
 #endif
 
+// Transformation
+#include <Eigen/Geometry>
+
 #include <iostream>
 #include <vector>
 #include <math.h>
@@ -142,5 +145,7 @@ float getHausdorffDistance (Mesh m1, Mesh m2);
 float isEndToEndConnected (Segment s1, Segment s2);
 
 Transformation getTransformation (Segment s1, Segment s2);
+
+Transformation getRotationMatrix (Vector v1, Vector v2);
 
 #endif
