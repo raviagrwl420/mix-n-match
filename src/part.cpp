@@ -10,6 +10,8 @@
 #include <part.h>
 
 Part::Part (string label, Mesh mesh) {
+	this->setLabel(label);
+
 	auto faceNormals = mesh.add_property_map<FaceIndex, Vector>("f:normals", CGAL::NULL_VECTOR).first;
 	auto vertexNormals = mesh.add_property_map<VertexIndex, Vector>("v:normals", CGAL::NULL_VECTOR).first;
 
@@ -209,7 +211,7 @@ void Part::renderPrimitive () {
 }
 
 void Part::render (DisplayType displayType) {
-	glPushMatrix();; 
+	glPushMatrix();
 	glMultMatrixf(getTransformationArray());
 	
 	switch (displayType) {
@@ -237,6 +239,9 @@ void Part::render (DisplayType displayType) {
 }
 
 void Part::renderForProjection (double scale, Vector center) {
+	glPushMatrix();
+	glMultMatrixf(getTransformationArray());
+
 	glBegin(GL_TRIANGLES);
 
 		for (FaceIndex f: faces(mesh)) {
@@ -249,4 +254,6 @@ void Part::renderForProjection (double scale, Vector center) {
 		}
 
 	glEnd();
+
+	glPopMatrix();
 }
