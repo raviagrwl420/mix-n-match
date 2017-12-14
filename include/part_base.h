@@ -71,6 +71,7 @@ public:
 
 	string label;
 	Vector color;
+	int c_index;
 	BoundingBox boundingBox;
 	Transformation transformation;
 
@@ -90,12 +91,17 @@ public:
 	}
 
 	virtual void setColor (int color_index) {
+		//std::cout << "set color (part): " << this->label << "(" << color_index << ")" << std::endl;
 		if(color_index < color_list.size())
+		{
 			this->color = Vector(
 					color_list[color_index][0],
 					color_list[color_index][1],
 					color_list[color_index][2]
 				);
+
+			this->c_index = color_index;
+		}
 		else
 		{
 			Vector c = getRandomColor();
@@ -105,6 +111,7 @@ public:
 					color_list[color_index][1],
 					color_list[color_index][2]
 				);
+			this->c_index = color_index;
 			
 		}
 	};	

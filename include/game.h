@@ -49,8 +49,13 @@ public:
 	Game (string path) {
 		this->chairs = loadFiles(path);
 
+		std::cout << "the number of chairs is: " << this->chairs.size() << std::endl;
+
 		for(int i = 0; i < this->chairs.size(); i++)
+		{
+			//std::cout << "set color (chair): " << this->chairs[i]->label << "(" << i << ")" << std::endl;
 			this->chairs[i]->setColor(i);			
+		}
 
 		this->original_chairs_num = this->chairs.size();
 	}
@@ -99,6 +104,11 @@ public:
 
 		Group* c1 = dynamic_cast<Group*>(theChair1);
 		Group* c2 = dynamic_cast<Group*>(theChair2);
+
+		// c1->print(0);
+		// std::cout << std::endl;
+		// c2->print(0);
+		// std::cout << std::endl;
 
 		bool hasArm_1 = c1->hasArmRest();
 		bool hasArm_2 = c2->hasArmRest();

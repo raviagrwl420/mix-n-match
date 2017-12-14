@@ -242,7 +242,8 @@ void Part::render (DisplayType displayType) {
 	glPushMatrix();
 	glMultMatrixf(getTransformationArray());
 	
-	glColor3f(this->color[0], this->color[1], this->color[2]);
+	//glColor3f(this->color[0], this->color[1], this->color[2]); // set the color for part rendering
+	//glColor3f(color_list[this->c_index][0], color_list[this->c_index][1], color_list[this->c_index][2]); // set the color for part rendering
 
 	switch (displayType) {
 		case FLAT_SHADED:

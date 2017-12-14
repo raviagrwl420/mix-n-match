@@ -15,6 +15,8 @@
 #include <vector>
 #include <map>
 
+#define HAUSDORFF_THRESHOLD 0.25
+
 using std::vector;
 using std::map;
 using std::make_pair;
@@ -64,10 +66,15 @@ Group::Group (string label) {
 
 void Group::setColor (int color_index) {
 
-	for(int i = 0; i < this->members.size(); i++)			
-				this->members[i]->setColor(color_index);		
+	this->c_index = color_index;
+	for(int i = 0; i < this->members.size(); i++)	
+	{
+		
+		//std::cout << "set color (group): " << this->members[i]->label << "(" << color_index << ")" << std::endl;
+		this->members[i]->setColor(color_index);		
+	}
 
-	
+
 	// if(color_index < color_count)	
 	// {		
 	// 	for(int i = 0; i < this->members.size(); i++)			
@@ -190,7 +197,8 @@ void Group::print (int level) {
 	for(int i = 0; i < level; i++)
 		std::cout << "\t";
 
-	std::cout << this->label << ": " << std::endl;
+	//std::cout << this->label << ": (" << this->color[0] << ", " << this->color[1] << ", " << this->color[2] << std::endl;
+	std::cout << this->label << ":" << std::endl;
 
 	
 	if(Group* theChair = dynamic_cast<Group*>(this)){
@@ -279,26 +287,55 @@ bool Group::removeMember(string label) {
 
 }
 
+void partByPart (Group *group1, Group* group2) {
+	for (PartBase *p1: group1->members) {
+		for (PartBase *p2: group2->members) {
+			Part *part1 = (Part*) p1->make_copy();
+			Part *part2 = (Part*) p2->make_copy();
+			float hausdorffDistance = getHausdorffDistance(part1->mesh, part2->mesh);
+			if (hausdorffDistance < HAUSDORFF_THRESHOLD) {
+				part2->transformTo(part1);
+				group1->replace(part1->label, group2, part2->label);
+			}
+		}
+	}
+}
+
 bool Group::replace(string label1, PartBase *part2, string label2)
 {	
+		std::cout << "replace" << std::endl;
 		PartBase *parent = this->getParentGlobally(label1);		
 
 		// 2. make a copy of the element in part2 with label 2
 		PartBase *targetPart = part2->getMemberGlobally(label2);
-		PartBase *copyElement = targetPart->make_copy();				
+		PartBase *copyElement = targetPart->make_copy();
+
+		PartBase *sourcePart = this->getMemberGlobally(label1);		
 
 		// 1. remove the element from part1 with label1
 		if(!this->removeMember(label1)) 
 		{ 
-			
 			return false;
 		}	
 
 		// 3. insert the copied element into the part1
 		
 		if(Group* theParent = dynamic_cast<Group*>(parent)) 
-		{			
-			theParent->addMember(copyElement);
+		{
+			Group *copyGroup, *sourceGroup;
+
+			if ((copyGroup = dynamic_cast<Group*>(copyElement)) && (sourceGroup = dynamic_cast<Group*>(sourcePart))) {
+				std::cout << "copyGroup: " << copyGroup << "sourceGroup: " << sourceGroup << std::endl;
+				if (1) {
+					copyGroup->transformTo(sourceGroup, NONUNIFORM);
+					theParent->addMember(copyElement);		
+				} else {
+					partByPart(sourceGroup, copyGroup);
+				}				
+			} else {
+				theParent->addMember(copyElement);
+			}
+			
 			return true;
 		}
 
@@ -309,7 +346,7 @@ bool Group::replace(string label1, PartBase *part2, string label2)
 
 bool Group::swap(string label1, PartBase *part2, string label2)
 {
-	PartBase *copyPart1 = this->make_copy();	
+	PartBase *copyPart1 = this->make_copy();
 
 	this->replace(label1, part2, label2);
 

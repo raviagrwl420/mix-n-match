@@ -57,7 +57,7 @@ float rotationX = 0.0, rotationY = 0.0;
 // Live Variables
 int main_window;
 int displayType = FLAT_SHADED;
-float scale = 1.0;
+float scale = 2.5;
 float view_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 float chairA_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 float chairB_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
