@@ -31,7 +31,7 @@ Part::Part (string label, Mesh mesh) {
 	this->fitSegment = getLeastSquareFitSegment(mesh);
 
 	bool curved = false;
-	if (label != string("LegFrontLeft") && label != string("LegFrontRight") && label != string("RightBar") && label != string("LeftBar")) {
+	if (label != string("LegFrontLeft") && label != string("LegFrontRight") && label != string("RightBar") && label != string("LeftBar") && label != string("chairfancy4") && label != string("chair2721")) {
 		try {
 			this->skeleton = getSkeleton(mesh);
 		} catch (...) {
@@ -242,6 +242,8 @@ void Part::render (DisplayType displayType) {
 	glPushMatrix();
 	glMultMatrixf(getTransformationArray());
 	
+	glColor3f(this->color[0], this->color[1], this->color[2]);
+
 	switch (displayType) {
 		case FLAT_SHADED:
 			renderFlatShaded(mesh);

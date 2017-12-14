@@ -302,5 +302,5 @@ int isPlausible (PartBase *part) {
 	float max = prediction1 > prediction2 ? prediction1 : prediction2;
 	max = max > prediction3 ? max : prediction3;
 
-	return max < -0.5;
+	return max < -0.9;
 }

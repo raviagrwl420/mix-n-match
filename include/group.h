@@ -26,6 +26,8 @@ public:
 	vector<PartBase*> members;
 	map<string, int> labelIndexMap;
 
+	bool has_color = false;
+
 	Group (string label);
 	~Group () {};
 
@@ -49,11 +51,46 @@ public:
     // Transformation
     void applyTransformation (Transformation transform);
     void transformTo (PartBase *part2, Transformation_Type type);
+
+    bool hasArmRest();
+
+    void setColor (int color_index);
+    void setColor (Vector c);
 };
 
 Group::Group (string label) {
 	this->setLabel(label + "_Group");
 }
+
+void Group::setColor (int color_index) {
+
+	for(int i = 0; i < this->members.size(); i++)			
+				this->members[i]->setColor(color_index);		
+
+	
+	// if(color_index < color_count)	
+	// {		
+	// 	for(int i = 0; i < this->members.size(); i++)			
+	// 			this->members[i]->setColor(color_index);		
+	// } else
+	// {
+	// 	if(!this->has_color)
+	// 	{
+	// 		this->color = getRandomColor();
+	// 		this->has_color = true;
+	// 	}
+	// 	this->setColor(this->color);
+
+	// }
+};	
+
+void Group::setColor (Vector c) {	
+	PartBase::setColor(c);
+	
+	for(int i = 0; i < this->members.size(); i++)
+		this->members[i]->setColor(c);
+	
+};	
 
 void Group::addMember (PartBase *member) {
 	if (members.size() == 0)
@@ -326,6 +363,16 @@ void Group::transformTo (PartBase *part2, Transformation_Type type) {
 			this->applyTransformation(getNonUniformTransformation(part2->boundingBox, this->boundingBox));
 			break;
 	}
+}
+
+bool Group::hasArmRest () {
+	PartBase* armRestGroup = this->getMemberGlobally("Arm_Group");
+	if(Group* group = dynamic_cast<Group*>(armRestGroup)) 
+	{	
+		if(group->members.size() > 0)
+			return true;
+	}
+	return false;
 }
 
 #endif
