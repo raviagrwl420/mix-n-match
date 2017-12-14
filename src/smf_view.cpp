@@ -180,6 +180,16 @@ void control_cb(int control) {
 			chairs = loadFiles(folderPath);
 			updateGLUI(chairs);
 
+
+
+
+			for(int i =0 ; i < chairs.size(); i++){
+
+				std::cout << "\n\nCheck if Chair "<<i<<" plausible? " << std::endl;
+				int isPlausibleChair = isPlausible(chairs[i]);
+				std::cout << "Plausible:\t" << isPlausibleChair<< std::endl<<std::endl;
+			}
+
 			break;
 		}
 

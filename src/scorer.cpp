@@ -12,7 +12,7 @@ int modelCount = 1;
 
 HOGDescriptor hog(
 	Size(224, 224), //winSize
-	Size(112, 112), //blocksize
+	Size(224, 224), //blocksize
 	Size(28, 28), //blockStride,
 	Size(56, 56), //cellSize,
 	9, //nbins,
@@ -176,8 +176,8 @@ void getSVMParams (SVM *svm) {
 
 void SVMtrain (Mat &trainMat, vector<int> &trainLabels, Mat &testResponse, Mat &testMat, String modelName){
 	Ptr<SVM> svm = SVM::create();
-	svm->setGamma(0.50625);
-	svm->setC(12.5);
+	svm->setGamma(.01);
+	svm->setC(1);
 	svm->setKernel(SVM::RBF);
 	svm->setType(SVM::C_SVC);
 	Ptr<TrainData> td = TrainData::create(trainMat, ROW_SAMPLE, trainLabels);
@@ -292,6 +292,7 @@ float predict (PartBase *part, View view) {
 	}
 
 	float prediction = predict(projectionMatrix, view);
+	cout<<"Prediction: \t"<< prediction<<"\n";
 	return prediction;
 }
 
@@ -299,8 +300,12 @@ int isPlausible (PartBase *part) {
 	float prediction1 = predict(part, SIDE);
 	float prediction2 = predict(part, TOP);
 	float prediction3 = predict(part, FRONT);
-	float max = prediction1 > prediction2 ? prediction1 : prediction2;
-	max = max > prediction3 ? max : prediction3;
+	// float max = prediction1 > prediction2 ? prediction1 : prediction2;
+	// max = max > prediction3 ? max : prediction3;
 
-	return max < -0.5;
+	float threshold = 0;
+
+	// return max < -0.5;
+
+	return (prediction1 < threshold) && (prediction2 < threshold) && (prediction3 < threshold);
 }
