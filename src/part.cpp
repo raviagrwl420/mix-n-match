@@ -218,6 +218,8 @@ void Part::render (DisplayType displayType) {
 	glPushMatrix();
 	glMultMatrixf(getTransformationArray());
 	
+	glColor3f(this->color[0], this->color[1], this->color[2]);
+
 	switch (displayType) {
 		case FLAT_SHADED:
 			renderFlatShaded(mesh);

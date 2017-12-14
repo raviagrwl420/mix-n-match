@@ -1,3 +1,7 @@
+#ifndef SCORRER_H
+#define SCORRER_H
+
+
 #define USE_OPENCV_3
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -25,3 +29,5 @@ void trainAllModels (string pathPositive, string pathNegative);
 float predict (Mat projection, View view);
 float predict (PartBase *part, View view);
 int isPlausible (PartBase *part);
+
+#endif

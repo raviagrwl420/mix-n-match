@@ -48,6 +48,10 @@ public:
 
 	Game (string path) {
 		this->chairs = loadFiles(path);
+
+		for(int i = 0; i < this->chairs.size(); i++)
+			this->chairs[i]->setColor(i);			
+
 		this->original_chairs_num = this->chairs.size();
 	}
 
