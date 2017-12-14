@@ -244,12 +244,12 @@ void chair_cb (int control) {
 	} else if (control == CHAIR_B) {
 		chairB = chairs[chairBIndex];
 	} else if (control == SWAP_LEGS) {
-		PartBase *legA = chairA->getMember("Leg");
-		PartBase *legB = chairB->getMember("Leg");
-		swap(chairA, chairB, "Leg");
+		PartBase *legA = chairA->getMember("Leg_Group");
+		PartBase *legB = chairB->getMember("Leg_Group");
+		swap(chairA, chairB, "Leg_Group");
 
-		chairA->setMember("Leg", legB);
-		chairB->setMember("Leg", legA);
+		chairA->setMember("Leg_Group", legB);
+		chairB->setMember("Leg_Group", legA);
 
 		std::cout << "Check if ChairA plausible? " << std::endl;
 		int isPlausibleChairA = isPlausible(chairA);
@@ -257,24 +257,24 @@ void chair_cb (int control) {
 		int isPlausibleChairB = isPlausible(chairB);
 		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
 	} else if (control == SWAP_BACK) {
-		PartBase *backA = chairA->getMember("Back");
-		PartBase *backB = chairB->getMember("Back");
-		swap(chairA, chairB, "Back");
+		PartBase *backA = chairA->getMember("Back_Group");
+		PartBase *backB = chairB->getMember("Back_Group");
+		swap(chairA, chairB, "Back_Group");
 
-		chairA->setMember("Back", backB);
-		chairB->setMember("Back", backA);
+		chairA->setMember("Back_Group", backB);
+		chairB->setMember("Back_Group", backA);
 
 		int isPlausibleChairA = isPlausible(chairA);
 		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
 		int isPlausibleChairB = isPlausible(chairB);
 		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
 	} else if (control == SWAP_SEAT) {
-		PartBase *seatA = chairA->getMember("Seat");
-		PartBase *seatB = chairB->getMember("Seat");
-		swap(chairA, chairB, "Seat");
+		PartBase *seatA = chairA->getMember("Seat_Group");
+		PartBase *seatB = chairB->getMember("Seat_Group");
+		swap(chairA, chairB, "Seat_Group");
 
-		chairA->setMember("Seat", seatB);
-		chairB->setMember("Seat", seatA);
+		chairA->setMember("Seat_Group", seatB);
+		chairB->setMember("Seat_Group", seatA);
 
 		int isPlausibleChairA = isPlausible(chairA);
 		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
