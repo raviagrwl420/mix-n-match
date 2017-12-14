@@ -194,11 +194,12 @@ void control_cb(int control) {
 			fPath = exec("zenity --file-selection --directory --title=\"Select a Directory\" 2>/dev/null");
 			// Remove the newline character at the end
 			fPath = fPath.substr(0, fPath.size() - 1);
-
-			// Load Files
-			game = Game::initGame(fPath);
-			game->run();
-			game_GLUI();			
+			if (fPath.size() != 0) {
+				// Load Files
+				game = Game::initGame(fPath);
+				game->run();
+				game_GLUI();
+			}
 			break;
 		}
 

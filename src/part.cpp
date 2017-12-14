@@ -134,6 +134,30 @@ void Part::writePart (string filename) {
 	smf_file.close();
 }
 
+int Part::writeToFile (ofstream& smf_file, int vertexStartIndex, Transformation t) {
+	map<VertexIndex, int> vertexIndexMap;
+
+	int count = vertexStartIndex;
+	for (VertexIndex v: mesh.vertices()) {
+		Point p = mesh.point(v);
+		Transformation total_transform = transformation * t;
+		p = total_transform.transform(p);
+		smf_file << "v " << p.x() << " " << p.y() << " " << p.z() << endl;
+		vertexIndexMap[v] = count;
+		count++;
+	}
+
+	for (FaceIndex f: mesh.faces()) {
+		smf_file << "f";
+		for (VertexIndex v: vertices_around_face(mesh.halfedge(f), mesh)) {
+			smf_file << " " << vertexIndexMap[v];
+		}
+		smf_file << endl;
+	}
+
+	return count;
+}
+
 void renderFlatShaded(Mesh mesh) {
 	glShadeModel(GL_FLAT);
 	glEnable(GL_NORMALIZE);
@@ -271,6 +295,25 @@ PartBase* Part::make_copy() {
 	theLabel = theLabel.erase(s_idx, 5);
 
 	Mesh kidMesh(this->mesh);
+
+	// Apply Transformation
+	for (VertexIndex v: kidMesh.vertices()) {
+		mesh.point(v) = (this->transformation).transform(mesh.point(v));
+	}
+
 	Part* newPart = new Part(theLabel, kidMesh);	
 	return newPart;
+}
+
+void Part::transformTo (Part *part2) {
+	if (this->primitive == part2->primitive) {
+		switch (this->primitive) {
+			case LINE:
+				this->applyTransformation(getTransformation(part2->fitSegment, this->fitSegment));
+				break;
+			case PLANE:
+				this->applyTransformation(getTransformation(part2->boundingBox, this->boundingBox));
+				break;
+		}
+	}
 }

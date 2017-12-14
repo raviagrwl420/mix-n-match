@@ -10,6 +10,7 @@
 #ifndef PART_BASE_H
 #define PART_BASE_H
 
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,7 @@
 
 #include <cgal.h>
 
+using std::ofstream;
 using std::string;
 
 enum DisplayType {FLAT_SHADED, SMOOTH_SHADED, WIREFRAME, SHADED_WITH_EDGES, PRIMITIVES};
@@ -115,6 +117,8 @@ public:
 
 	virtual void setMember (string label, PartBase *part) {};
 
+	virtual int writeToFile (ofstream& smf_file, int vertexStartIndex, Transformation t) {};
+
 	virtual void render (DisplayType displayType) {};
 
 	virtual void renderForProjection (double scale, Vector center) {};
@@ -134,7 +138,7 @@ public:
 	// Transformations
 	float *getTransformationArray ();
 
-	void applyTransformation (Transformation transform);
+	virtual void applyTransformation (Transformation transform);
 
 	void translate (Vector vec);
 

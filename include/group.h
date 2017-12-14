@@ -19,6 +19,8 @@ using std::vector;
 using std::map;
 using std::make_pair;
 
+enum Transformation_Type {UNIFORM, NONUNIFORM};
+
 class Group : public PartBase {
 public:
 	vector<PartBase*> members;
@@ -32,6 +34,8 @@ public:
 	void addMember (PartBase *member);
 	void render (DisplayType displayType) override;
 	void renderForProjection (double scale, Vector center) override;
+	int writeToFile (ofstream& smf_file, int vertexStartIndex, Transformation t) override;
+	void startWriteToFile (string filename);
 
 	PartBase *getMember (string label);
 	void setMember (string label, PartBase *member);
@@ -43,6 +47,11 @@ public:
     PartBase* make_copy();		
     bool replace(string label1, PartBase *part2, string label2);		
     bool swap(string label1, PartBase *part2, string label2);
+
+    // Transformation
+    void applyTransformation (Transformation transform);
+    void transformTo (PartBase *part2, Transformation_Type type);
+
     bool hasArmRest();
 
     void setColor (int color_index);
@@ -313,9 +322,50 @@ void Group::setMember (string label, PartBase *member) {
 		members[labelIndexMap[label]] = member;
 }
 
+int Group::writeToFile (ofstream& smf_file, int vertexStartIndex, Transformation t) {
+	Transformation total_transformation = transformation * t;
 
-bool Group::hasArmRest()
-{
+	int vertexIndex = vertexStartIndex;	
+	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
+		PartBase* member = *it;
+
+		vertexIndex = member->writeToFile(smf_file, vertexIndex, total_transformation);
+	}
+
+	return vertexIndex;
+}
+
+void Group::startWriteToFile (string filename) {
+	ofstream smf_file;
+	smf_file.open(filename.c_str());
+
+	writeToFile(smf_file, 1, transformation);
+
+	smf_file.close();
+
+}
+
+// Transformation
+void Group::applyTransformation (Transformation transform) {
+	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
+		PartBase* member = *it;
+
+		member->applyTransformation(transformation);
+	}
+};
+
+void Group::transformTo (PartBase *part2, Transformation_Type type) {
+	switch (type) {
+		case UNIFORM:
+			this->applyTransformation(getTransformation(part2->boundingBox, this->boundingBox));
+			break;
+		case NONUNIFORM:
+			this->applyTransformation(getNonUniformTransformation(part2->boundingBox, this->boundingBox));
+			break;
+	}
+}
+
+bool Group::hasArmRest () {
 	PartBase* armRestGroup = this->getMemberGlobally("Arm_Group");
 	if(Group* group = dynamic_cast<Group*>(armRestGroup)) 
 	{	
