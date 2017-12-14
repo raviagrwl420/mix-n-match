@@ -51,6 +51,8 @@ public:
 	void renderPrimitive ();
 	
 	PartBase* make_copy();
+
+	void transformTo (Part *part2);
 };
 
 #endif

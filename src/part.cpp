@@ -302,3 +302,16 @@ PartBase* Part::make_copy() {
 	Part* newPart = new Part(theLabel, kidMesh);	
 	return newPart;
 }
+
+void Part::transformTo (Part *part2) {
+	if (this->primitive == part2->primitive) {
+		switch (this->primitive) {
+			case LINE:
+				this->applyTransformation(getTransformation(part2->fitSegment, this->fitSegment));
+				break;
+			case PLANE:
+				this->applyTransformation(getTransformation(part2->boundingBox, this->boundingBox));
+				break;
+		}
+	}
+}
