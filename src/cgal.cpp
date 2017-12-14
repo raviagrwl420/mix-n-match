@@ -253,13 +253,19 @@ Transformation getNonUniformTransformation (BoundingBox box1, BoundingBox box2) 
 	Transformation translation1(CGAL::TRANSLATION, translateToOrigin);
 
 	// Scale
+	float s1 = getScale(box1);
+	float s2 = getScale(box2);
+	float s = sqrt(s1/s2);
+	Transformation scale1(CGAL::SCALING, s);
+
 	double zRange1 = box1.zmax() - box1.zmin();
 	double zRange2 = box2.zmax() - box2.zmin();
-	
-	Transformation scale(
+	Transformation scale2(
 		1              , 0               , 0, 
 		0              , 1               , 0,
-		0              , 0               , zRange1/zRange2, 1);
+		0              , 0               , zRange1/(s*zRange2), 1);
+
+	Transformation scale = scale2*scale1;
 
 	// Translation
 	Vector translateToMidPoint1 = m1 - o; 

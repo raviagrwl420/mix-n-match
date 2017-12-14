@@ -19,6 +19,8 @@ using std::vector;
 using std::map;
 using std::make_pair;
 
+enum Transformation_Type {UNIFORM, NONUNIFORM};
+
 class Group : public PartBase {
 public:
 	vector<PartBase*> members;
@@ -43,6 +45,9 @@ public:
     PartBase* make_copy();		
     bool replace(string label1, PartBase *part2, string label2);		
     bool swap(string label1, PartBase *part2, string label2);
+
+    // Transformation
+    void transformTo (PartBase *part2, Transformation_Type type);
 };
 
 Group::Group (string label) {
@@ -300,6 +305,18 @@ void Group::startWriteToFile (string filename) {
 
 	smf_file.close();
 
+}
+
+// Transformation
+void Group::transformTo (PartBase *part2, Transformation_Type type) {
+	switch (type) {
+		case UNIFORM:
+			this->applyTransformation(getTransformation(part2->boundingBox, this->boundingBox));
+			break;
+		case NONUNIFORM:
+			this->applyTransformation(getNonUniformTransformation(part2->boundingBox, this->boundingBox));
+			break;
+	}
 }
 
 #endif
