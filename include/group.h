@@ -47,6 +47,7 @@ public:
     bool swap(string label1, PartBase *part2, string label2);
 
     // Transformation
+    void applyTransformation (Transformation transform);
     void transformTo (PartBase *part2, Transformation_Type type);
 };
 
@@ -308,6 +309,14 @@ void Group::startWriteToFile (string filename) {
 }
 
 // Transformation
+void Group::applyTransformation (Transformation transform) {
+	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
+		PartBase* member = *it;
+
+		member->applyTransformation(transformation);
+	}
+};
+
 void Group::transformTo (PartBase *part2, Transformation_Type type) {
 	switch (type) {
 		case UNIFORM:

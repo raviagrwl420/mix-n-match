@@ -61,7 +61,7 @@ public:
 	// Transformations
 	float *getTransformationArray ();
 
-	void applyTransformation (Transformation transform);
+	virtual void applyTransformation (Transformation transform);
 
 	void translate (Vector vec);
 
