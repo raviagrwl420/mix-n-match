@@ -243,6 +243,32 @@ Transformation getTransformation (BoundingBox box1, BoundingBox box2) {
 	return translation2*scale*translation1;
 };
 
+Transformation getNonUniformTransformation (BoundingBox box1, BoundingBox box2) {
+	Origin o;
+	Point m1 = getCenterPoint(box1);
+	Point m2 = getCenterPoint(box2);
+
+	// Translate to mid point
+	Vector translateToOrigin = o - m2;
+	Transformation translation1(CGAL::TRANSLATION, translateToOrigin);
+
+	// Scale
+	double zRange1 = box1.zmax() - box1.zmin();
+	double zRange2 = box2.zmax() - box2.zmin();
+	
+	Transformation scale(
+		1              , 0               , 0, 
+		0              , 1               , 0,
+		0              , 0               , zRange1/zRange2, 1);
+
+	// Translation
+	Vector translateToMidPoint1 = m1 - o; 
+	Transformation translation2(CGAL::TRANSLATION, translateToMidPoint1);
+
+	return translation2*scale*translation1;
+};
+
+
 Transformation getRotationMatrix (Vector v1, Vector v2) {
 	Eigen::Vector3f A(v1.x(), v1.y(), v1.z());
 	Eigen::Vector3f B(v2.x(), v2.y(), v2.z());

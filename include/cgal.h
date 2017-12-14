@@ -57,9 +57,9 @@ typedef CGAL::MP_Float ET;
 #include <vector>
 #include <math.h>
 
-#define SKELETON_CURVED_THRESHOLD 0.75
-#define PLANAR_LOW_THRESHOLD 0.4
-#define PLANAR_HIGH_THRESHOLD 2.5
+#define SKELETON_CURVED_THRESHOLD 0.8
+#define PLANAR_LOW_THRESHOLD 0.45
+#define PLANAR_HIGH_THRESHOLD 2.25
 #define CIRCULAR_THRESHOLD 0.05
 #define END_TO_END_CONNECTIVITY_THRESHOLD 0.05
 #define END_TO_LINE_CONNECTIVITY_THRESHOLD 0.05
@@ -147,6 +147,8 @@ float isEndToEndConnected (Segment s1, Segment s2);
 Transformation getTransformation (Segment s1, Segment s2);
 
 Transformation getTransformation (BoundingBox box1, BoundingBox box2);
+
+Transformation getNonUniformTransformation (BoundingBox box1, BoundingBox box2);
 
 Transformation getRotationMatrix (Vector v1, Vector v2);
 
