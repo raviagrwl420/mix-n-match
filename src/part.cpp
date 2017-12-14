@@ -293,6 +293,12 @@ PartBase* Part::make_copy() {
 	theLabel = theLabel.erase(s_idx, 5);
 
 	Mesh kidMesh(this->mesh);
+
+	// Apply Transformation
+	for (VertexIndex v: kidMesh.vertices()) {
+		mesh.point(v) = (this->transformation).transform(mesh.point(v));
+	}
+
 	Part* newPart = new Part(theLabel, kidMesh);	
 	return newPart;
 }
