@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+#include <ctime>
 
 #include <parser.h>
 #include <part.h>
@@ -24,6 +25,7 @@
 #include <cgal.h>
 #include "RelationContainer.h"
 #include "relation.h"
+#include "game.h"
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -32,7 +34,9 @@ using std::runtime_error;
 using std::shared_ptr;
 using std::array;
 
-enum Buttons {ROTATION, OPEN, OPEN_DIR, SAVE, QUIT, CHAIR_A, CHAIR_B, SWAP_LEGS, SWAP_BACK, SWAP_SEAT};
+enum Buttons {ROTATION, OPEN, OPEN_DIR, START_GAME, SAVE, QUIT, CHAIR_A, CHAIR_B, SWAP_LEGS, SWAP_BACK, SWAP_SEAT, GAME_SELECT_A, GAME_SELECT_B, GAME_SELECT_BOTH, GAME_SLEECT_NONE, GAME_SAVE_A, GAME_SAVE_B};
+
+Game *game;
 
 vector<PartBase*> chairs;
 PartBase *chair;
@@ -60,6 +64,7 @@ float chairB_rotate[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 float obj_pos[] = {0.0, 0.0, -5.0};
 
 void updateGLUI (vector<PartBase*>);
+void game_GLUI ();
 
 // GLUT idle function
 void glutIdle (void) {
@@ -94,7 +99,8 @@ void displayAxes () {
 }
 
 // Display mesh function
-void displayMesh (void) {
+void displayMesh (void) {	
+
 	// for (PartBase *chair : chairs) {
 	// 	chair->render((DisplayType) displayType);
 	// }
@@ -181,19 +187,33 @@ void control_cb(int control) {
 			updateGLUI(chairs);
 
 			// ---- test -----------------
-			Group* theChair1 = dynamic_cast<Group*>(chairs[0]);
-			Group* theChair2 = dynamic_cast<Group*>(chairs[1]);
-			theChair1->print(0);
-			theChair2->print(0);
+			// Group* theChair1 = dynamic_cast<Group*>(chairs[0]);
+			// Group* theChair2 = dynamic_cast<Group*>(chairs[1]);
+			// theChair1->print(0);
+			// theChair2->print(0);
 
-			//theChair->removeMember("Arm_Group");
+			// //theChair->removeMember("Arm_Group");
 
-			theChair1->swap("Leg_Group", theChair2, "Leg_Group");
+			// theChair1->swap("Leg_Group", theChair2, "Leg_Group");
 
-			theChair1->print(0);
-			theChair2->print(0);
+			// theChair1->print(0);
+			// theChair2->print(0);
 
-			std::cout << "Test Finished" << std::endl;
+			// std::cout << "Test Finished" << std::endl;
+
+			break;
+		}
+
+		case START_GAME: {
+			string fPath;
+			fPath = exec("zenity --file-selection --directory --title=\"Select a Directory\" 2>/dev/null");
+			// Remove the newline character at the end
+			fPath = fPath.substr(0, fPath.size() - 1);
+
+			// Load Files
+			game = Game::initGame(fPath);
+			game->run();
+			game_GLUI();			
 
 			break;
 		}
@@ -244,12 +264,12 @@ void chair_cb (int control) {
 	} else if (control == CHAIR_B) {
 		chairB = chairs[chairBIndex];
 	} else if (control == SWAP_LEGS) {
-		PartBase *legA = chairA->getMember("Leg");
-		PartBase *legB = chairB->getMember("Leg");
-		swap(chairA, chairB, "Leg");
+		PartBase *legA = chairA->getMember("Leg_Group");
+		PartBase *legB = chairB->getMember("Leg_Group");
+		swap(chairA, chairB, "Leg_Group");
 
-		chairA->setMember("Leg", legB);
-		chairB->setMember("Leg", legA);
+		chairA->setMember("Leg_Group", legB);
+		chairB->setMember("Leg_Group", legA);
 
 		std::cout << "Check if ChairA plausible? " << std::endl;
 		int isPlausibleChairA = isPlausible(chairA);
@@ -257,24 +277,24 @@ void chair_cb (int control) {
 		int isPlausibleChairB = isPlausible(chairB);
 		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
 	} else if (control == SWAP_BACK) {
-		PartBase *backA = chairA->getMember("Back");
-		PartBase *backB = chairB->getMember("Back");
-		swap(chairA, chairB, "Back");
+		PartBase *backA = chairA->getMember("Back_Group");
+		PartBase *backB = chairB->getMember("Back_Group");
+		swap(chairA, chairB, "Back_Group");
 
-		chairA->setMember("Back", backB);
-		chairB->setMember("Back", backA);
+		chairA->setMember("Back_Group", backB);
+		chairB->setMember("Back_Group", backA);
 
 		int isPlausibleChairA = isPlausible(chairA);
 		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
 		int isPlausibleChairB = isPlausible(chairB);
 		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
 	} else if (control == SWAP_SEAT) {
-		PartBase *seatA = chairA->getMember("Seat");
-		PartBase *seatB = chairB->getMember("Seat");
-		swap(chairA, chairB, "Seat");
+		PartBase *seatA = chairA->getMember("Seat_Group");
+		PartBase *seatB = chairB->getMember("Seat_Group");
+		swap(chairA, chairB, "Seat_Group");
 
-		chairA->setMember("Seat", seatB);
-		chairB->setMember("Seat", seatA);
+		chairA->setMember("Seat_Group", seatB);
+		chairB->setMember("Seat_Group", seatA);
 
 		int isPlausibleChairA = isPlausible(chairA);
 		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
@@ -350,11 +370,15 @@ void setupGlui () {
 	// Add Buttons
 	glui->add_button_to_panel(controlsPanel, "Open", OPEN, control_cb);
 	glui->add_button_to_panel(controlsPanel, "Open Dir", OPEN_DIR, control_cb);
+	glui->add_button_to_panel(controlsPanel, "Start Game", START_GAME, control_cb);
 	glui->add_button_to_panel(controlsPanel, "Save", SAVE, control_cb);
 	glui->add_button_to_panel(controlsPanel, "Quit", QUIT, (GLUI_Update_CB)exit);
 };
 
 int main(int argc, char* argv[]) {
+	srand(time(NULL));
+
+
 	if (argc > 1) {
 		if (string(argv[1]) == string("train")) {
 			string path = argv[2];
@@ -418,3 +442,78 @@ int main(int argc, char* argv[]) {
 	// Start Main Loop
 	glutMainLoop();
 }
+
+
+
+
+
+
+//----------------- GAME -----------------
+
+string round_text = "";
+
+
+// GLUI game callback
+void game_cb (int control) {
+
+	bool to_continue = false;
+
+	if(control == GAME_SELECT_A)
+		to_continue = game->do_select("A");
+	else if(control == GAME_SELECT_B)
+		to_continue = game->do_select("B");
+	else if(control == GAME_SELECT_BOTH)
+		to_continue = game->do_select("BOTH");	
+	else if(control == GAME_SLEECT_NONE)
+		to_continue = game->do_select("NONE");	
+	else if(control == GAME_SAVE_A)
+		game->do_save("A");
+	else if(control == GAME_SAVE_B)
+		game->do_save("B");
+
+
+	round_text = game->current_round + "/" + game->round;
+
+	if(to_continue)
+	{
+		chairA = game->getChairA();
+		chairB = game->getChairB();
+	} else {
+		// todo: the game is done
+
+	}
+}
+
+
+
+void game_GLUI () {
+	chairsPanel = glui->add_panel("Game");
+	
+	//GLUI_StaticText
+	// GLUI_StaticText s_text_1 = glui->add_statictext_to_panel(chairsPanel, "round: " + game->current_round + "/" + game->round );
+	// GLUI_StaticText s_text_1 = glui->add_statictext_to_panel(chairsPanel, "selected new chairs: " + game->getNewChairsNum() );
+
+	// todo; fix this
+	//GLUI_EditText * height_text = glui->add_edittext_to_panel(cone_controls,"Height", GLUI_EDITTEXT_FLOAT, &height);
+	round_text = game->current_round + "/" + game->round;
+	GLUI_EditText *editText = glui->add_edittext_to_panel(chairsPanel, "Round: ", GLUI_EDITTEXT_TEXT, &round_text);
+	 
+
+
+	chairRotA = glui->add_rotation_to_panel(chairsPanel, "Rotate Chair A", chairA_rotate);
+	chairRotA->set_spin(1.0);
+	
+	chairRotB = glui->add_rotation_to_panel(chairsPanel, "Rotate Chair B", chairB_rotate);
+	chairRotB->set_spin(1.0);
+
+	glui->add_button_to_panel(chairsPanel, "A", GAME_SELECT_A, game_cb);
+	glui->add_button_to_panel(chairsPanel, "B", GAME_SELECT_B, game_cb);
+	glui->add_button_to_panel(chairsPanel, "Both", GAME_SELECT_BOTH, game_cb);
+	glui->add_button_to_panel(chairsPanel, "None", GAME_SLEECT_NONE, game_cb);
+
+	glui->add_button_to_panel(chairsPanel, "Save A", GAME_SAVE_A, game_cb);
+	glui->add_button_to_panel(chairsPanel, "Save B", GAME_SAVE_B, game_cb);
+	
+	chairA = game->getChairA();
+	chairB = game->getChairB();	
+};

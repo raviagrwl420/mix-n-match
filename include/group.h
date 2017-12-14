@@ -41,6 +41,7 @@ public:
     PartBase* make_copy();		
     bool replace(string label1, PartBase *part2, string label2);		
     bool swap(string label1, PartBase *part2, string label2);
+    bool hasArmRest();
 };
 
 Group::Group (string label) {
@@ -275,6 +276,18 @@ bool Group::swap(string label1, PartBase *part2, string label2)
 void Group::setMember (string label, PartBase *member) {
 	if (labelIndexMap.count(label) > 0)
 		members[labelIndexMap[label]] = member;
+}
+
+
+bool Group::hasArmRest()
+{
+	PartBase* armRestGroup = this->getMemberGlobally("Arm_Group");
+	if(Group* group = dynamic_cast<Group*>(armRestGroup)) 
+	{	
+		if(group->members.size() > 0)
+			return true;
+	}
+	return false;
 }
 
 #endif
