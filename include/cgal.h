@@ -68,6 +68,7 @@ typedef CGAL::MP_Float ET;
 
 typedef CGAL::Simple_cartesian<double> K;
 typedef K::Point_3 Point;
+typedef K::Point_2 Point_2;
 typedef K::Line_3 Line;
 typedef K::Segment_3 Segment;
 typedef K::Plane_3 Plane;

@@ -10,7 +10,7 @@
 #include <part.h>
 
 Part::Part (string label, Mesh mesh) {
-	this->setLabel(label);
+	this->setLabel(label +  "_Part");
 
 	auto faceNormals = mesh.add_property_map<FaceIndex, Vector>("f:normals", CGAL::NULL_VECTOR).first;
 	auto vertexNormals = mesh.add_property_map<VertexIndex, Vector>("v:normals", CGAL::NULL_VECTOR).first;
@@ -284,4 +284,15 @@ void Part::renderForProjection (double scale, Vector center) {
 	glEnd();
 
 	glPopMatrix();
+}
+
+PartBase* Part::make_copy() {
+
+	string theLabel = this->label;
+	int s_idx = this->label.find("_Part");
+	theLabel = theLabel.erase(s_idx, 5);
+
+	Mesh kidMesh(this->mesh);
+	Part* newPart = new Part(theLabel, kidMesh);	
+	return newPart;
 }
