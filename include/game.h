@@ -248,11 +248,11 @@ public:
 
 	void do_save(string chair)
 	{
-		// todo: call save functions
-		//if("A" == selection)
-		
-		//if("B" == selection)		
-		
+		if ("A" == chair) {
+			((Group*) chairA)->startWriteToFile(chairA->label + ".obj");
+		} else if ("B" == chair) {
+			((Group*) chairB)->startWriteToFile(chairB->label + ".obj");
+		}
 	}
 
 };
