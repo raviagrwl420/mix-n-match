@@ -186,21 +186,6 @@ void control_cb(int control) {
 			chairs = loadFiles(folderPath);
 			updateGLUI(chairs);
 
-			// ---- test -----------------
-			// Group* theChair1 = dynamic_cast<Group*>(chairs[0]);
-			// Group* theChair2 = dynamic_cast<Group*>(chairs[1]);
-			// theChair1->print(0);
-			// theChair2->print(0);
-
-			// //theChair->removeMember("Arm_Group");
-
-			// theChair1->swap("Leg_Group", theChair2, "Leg_Group");
-
-			// theChair1->print(0);
-			// theChair2->print(0);
-
-			// std::cout << "Test Finished" << std::endl;
-
 			break;
 		}
 
@@ -214,7 +199,6 @@ void control_cb(int control) {
 			game = Game::initGame(fPath);
 			game->run();
 			game_GLUI();			
-
 			break;
 		}
 
