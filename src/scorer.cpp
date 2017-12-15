@@ -176,8 +176,8 @@ void getSVMParams (SVM *svm) {
 
 void SVMtrain (Mat &trainMat, vector<int> &trainLabels, Mat &testResponse, Mat &testMat, String modelName){
 	Ptr<SVM> svm = SVM::create();
-	svm->setGamma(.01);
-	svm->setC(1);
+	svm->setGamma(0.50625);
+	svm->setC(100);
 	svm->setKernel(SVM::RBF);
 	svm->setType(SVM::C_SVC);
 	Ptr<TrainData> td = TrainData::create(trainMat, ROW_SAMPLE, trainLabels);
