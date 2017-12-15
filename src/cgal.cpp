@@ -198,6 +198,17 @@ float getHausdorffDistance (Mesh m1, Mesh m2) {
 		CGAL::Polygon_mesh_processing::parameters::vertex_point_map(m2.points()));
 };
 
+double getMinScale (BoundingBox boundingBox) {
+	double xRange = boundingBox.xmax() - boundingBox.xmin();
+	double yRange = boundingBox.ymax() - boundingBox.ymin();
+	double zRange = boundingBox.zmax() - boundingBox.zmin();
+
+	double scale = xRange < yRange ? xRange : yRange;
+	scale = zRange < scale ? zRange : scale;
+
+	return scale;
+}
+
 Transformation getTransformation (Segment s1, Segment s2) {
 	Origin o;
 	Point m1 = getMidPoint(s1);
