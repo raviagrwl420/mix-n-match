@@ -51,7 +51,7 @@ public:
     bool swap(string label1, PartBase *part2, string label2);
 
     // Transformation
-    void applyTransformation (Transformation transform);
+    void applyTransformation (Transformation transform) override;
     void transformTo (PartBase *part2, Transformation_Type type);
 
     bool hasArmRest();
@@ -259,7 +259,7 @@ bool Group::removeMember(string label) {
 
 	int idx = this->labelIndexMap[label];
 	// reallocate memory	
-	delete this->members[idx];	
+	// delete this->members[idx];	
 	this->members.erase(this->members.begin()+idx);
 
 	//this->labelIndexMap.erase(label);
@@ -303,7 +303,6 @@ void partByPart (Group *group1, Group* group2) {
 
 bool Group::replace(string label1, PartBase *part2, string label2)
 {	
-		std::cout << "replace" << std::endl;
 		PartBase *parent = this->getParentGlobally(label1);		
 
 		// 2. make a copy of the element in part2 with label 2
@@ -322,15 +321,16 @@ bool Group::replace(string label1, PartBase *part2, string label2)
 		
 		if(Group* theParent = dynamic_cast<Group*>(parent)) 
 		{
-			Group *copyGroup, *sourceGroup;
-
-			if ((copyGroup = dynamic_cast<Group*>(copyElement)) && (sourceGroup = dynamic_cast<Group*>(sourcePart))) {
-				std::cout << "copyGroup: " << copyGroup << "sourceGroup: " << sourceGroup << std::endl;
-				if (1) {
+			Group *copyGroup = dynamic_cast<Group*>(copyElement);
+			Group *sourceGroup = dynamic_cast<Group*>(sourcePart);
+			
+			if ((copyGroup != NULL) && (sourceGroup != NULL)) {
+				if (true) {
 					copyGroup->transformTo(sourceGroup, NONUNIFORM);
 					theParent->addMember(copyElement);		
 				} else {
 					partByPart(sourceGroup, copyGroup);
+					theParent->addMember(sourceGroup);
 				}				
 			} else {
 				theParent->addMember(copyElement);
@@ -387,7 +387,7 @@ void Group::applyTransformation (Transformation transform) {
 	for (vector<PartBase*>::iterator it = members.begin() ; it != members.end(); ++it) {
 		PartBase* member = *it;
 
-		member->applyTransformation(transformation);
+		member->applyTransformation(transform);
 	}
 };
 
