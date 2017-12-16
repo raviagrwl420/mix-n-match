@@ -26,6 +26,7 @@
 #include "RelationContainer.h"
 #include "relation.h"
 #include "game.h"
+#include <kmean.h>
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -185,6 +186,10 @@ void control_cb(int control) {
 			// Load Files
 			chairs = loadFiles(folderPath);
 			updateGLUI(chairs);
+
+			getLabels(chairs);
+
+
 
 			break;
 		}
