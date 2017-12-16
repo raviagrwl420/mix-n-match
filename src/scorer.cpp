@@ -176,8 +176,21 @@ void getSVMParams (SVM *svm) {
 
 void SVMtrain (Mat &trainMat, vector<int> &trainLabels, Mat &testResponse, Mat &testMat, String modelName){
 	Ptr<SVM> svm = SVM::create();
-	svm->setGamma(0.50625);
-	svm->setC(100);
+
+	if(modelName == MODEL_1){
+		svm->setGamma(0.03375);
+		svm->setC(62.5);
+	}else if(modelName == MODEL_2){
+		svm->setGamma(0.50625);
+		svm->setC(100);
+
+	}else if(modelName == MODEL_3){
+
+		svm->setGamma(0.50625);
+		svm->setC(100);
+
+	}
+	
 	svm->setKernel(SVM::RBF);
 	svm->setType(SVM::C_SVC);
 	Ptr<TrainData> td = TrainData::create(trainMat, ROW_SAMPLE, trainLabels);
@@ -292,7 +305,7 @@ float predict (PartBase *part, View view) {
 	}
 
 	float prediction = predict(projectionMatrix, view);
-	cout<<"Prediction: \t"<< prediction<<"\n";
+	// cout<<"Prediction: \t"<< prediction<<"\n";
 	return prediction;
 }
 
