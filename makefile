@@ -7,7 +7,7 @@ SRCDIR := src
 BUILDDIR := build
 
 # Target
-TARGET := mcaq
+TARGET := mixnmatch
 
 # Source Extention
 SRCEXT := cpp
