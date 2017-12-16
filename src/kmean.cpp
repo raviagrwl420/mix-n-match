@@ -22,8 +22,8 @@ HOGDescriptor hogk(
 void getLabels(vector<PartBase*> chairs){
 
 	vector<Mat> view1, view2, view3;
-	Mat labels1, labels2, labels3;
-
+	// Mat labels1, labels2, labels3;
+	Mat labels;
 	for(int i = 0 ; i<chairs.size();i++){
 
 		view1.push_back(chairToMat(chairs[i],SIDE));
@@ -42,20 +42,20 @@ void getLabels(vector<PartBase*> chairs){
 
 
 
-	labels1 = calculateKMeans(view1);
-	labels2 = calculateKMeans(view2);
-	labels3 = calculateKMeans(view3);
+	labels = calculateKMeans(view1, view2, view3);
+	// labels2 = calculateKMeans(view2);
+	// labels3 = calculateKMeans(view3);
 
 	cout<<"I am here22222222222"<<"\n";
 
-	cout<<"Labels1 size: \t"<< labels1.size();
-	cout<<"Labels2 size: \t"<< labels2.size();
-	cout<<"Labels3 size: \t"<< labels3.size();
+	cout<<"Labels size: \t"<< labels.size();
+	// cout<<"Labels2 size: \t"<< labels2.size();
+	// cout<<"Labels3 size: \t"<< labels3.size();
 
 	
-	printLabels(labels1);
-	printLabels(labels2);
-	printLabels(labels3);
+	printLabels(labels);
+	// printLabels(labels2);
+	// printLabels(labels3);
 
 	cout<<"I am here3"<<"\n";
 
@@ -96,11 +96,11 @@ Mat chairToMat(PartBase *part, View view){
 }
 
 
-Mat calculateKMeans(vector<Mat> view){
+Mat calculateKMeans(vector<Mat> view1, vector<Mat> view2, vector<Mat> view3){
 	
 
 	vector<vector<float>> hogSamples;
-	getHOG(hogSamples, view);
+	getHOG(hogSamples, view1, view2, view3);
 
 	// Mat trainMat(trainHOG.size(), descriptor_size, CV_32FC1);
 	// Mat testMat(testHOG.size(), descriptor_size, CV_32FC1);
@@ -181,12 +181,20 @@ void loadData (vector<Mat> &view1, vector<Mat> &view2, vector<Mat> &view3, strin
 
 //function for k-mean clustering
 
-void getHOG(vector<vector<float>> &hogVectors, vector<Mat> &samples){
+void getHOG(vector<vector<float>> &hogVectors, vector<Mat> &samples1, vector<Mat> &samples2,vector<Mat> &samples3){
 
-	for (int i = 0; i < samples.size(); i++) {
-		vector<float> descriptors;
-		hogk.compute(samples[i], descriptors);
-		hogVectors.push_back(descriptors);
+	for (int i = 0; i < samples1.size(); i++) {
+		// vector<float> descriptors;
+		vector<float> descriptors1;
+		vector<float> descriptors2;
+		vector<float> descriptors3;
+		hogk.compute(samples1[i], descriptors1);
+		hogk.compute(samples2[i], descriptors2);
+		hogk.compute(samples3[i], descriptors3);
+
+		descriptors1.insert( descriptors1.end(), descriptors2.begin(), descriptors2.end() );
+		descriptors1.insert( descriptors1.end(), descriptors3.begin(), descriptors3.end() );
+		hogVectors.push_back(descriptors1);
 	}
 
 

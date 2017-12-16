@@ -26,8 +26,8 @@ using namespace std;
 
 void getLabels(vector<PartBase*> chairs);
 Mat chairToMat(PartBase *part, View view);
-Mat calculateKMeans(vector<Mat> view);
+Mat calculateKMeans(vector<Mat> view1, vector<Mat> view2, vector<Mat> view3);
 void ConvertVectortoMatrix (vector<vector<float>> &hogSamples,  Mat &samples);
 void loadData (vector<Mat> &view1, vector<Mat> &view2, vector<Mat> &view3, string &pathName);
-void getHOG(vector<vector<float>> &hogVectors, vector<Mat> &samples);
+void getHOG(vector<vector<float>> &hogVectors, vector<Mat> &samples1, vector<Mat> &samples2,vector<Mat> &samples3);
 void printLabels(Mat labels);
