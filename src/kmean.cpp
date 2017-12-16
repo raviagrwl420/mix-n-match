@@ -1,6 +1,6 @@
 #include <kmean.h>
 
-
+int clusterCount = 4;
 
 HOGDescriptor hogk(
 	Size(224, 224), //winSize
@@ -21,8 +21,17 @@ HOGDescriptor hogk(
 
 void getLabels(vector<PartBase*> chairs){
 
+	cout<<"###############CLUSTERING##################"<<"\n";
+
+	vector<int> clusters[clusterCount];
+
 	vector<Mat> view1, view2, view3;
-	// Mat labels1, labels2, labels3;
+	vector<string> names;
+
+	for(auto i : chairs){
+		names.push_back(i->label);
+	}
+
 	Mat labels;
 	for(int i = 0 ; i<chairs.size();i++){
 
@@ -32,35 +41,36 @@ void getLabels(vector<PartBase*> chairs){
 
 	}
 
-
-
-	// vector<vector<float>> hogVectors1, hogVectors2, hogVectors3;
-
-	// getHOG(hogVectors1, view1);
-	// getHOG(hogVectors2, view2);
-	// getHOG(hogVectors3, view3);
-
-
-
 	labels = calculateKMeans(view1, view2, view3);
-	// labels2 = calculateKMeans(view2);
-	// labels3 = calculateKMeans(view3);
 
-	cout<<"I am here22222222222"<<"\n";
-
-	cout<<"Labels size: \t"<< labels.size();
-	// cout<<"Labels2 size: \t"<< labels2.size();
-	// cout<<"Labels3 size: \t"<< labels3.size();
-
+	cout<<"Labels size: \t"<< labels.size()<<"\n";
 	
 	printLabels(labels);
-	// printLabels(labels2);
-	// printLabels(labels3);
 
-	cout<<"I am here3"<<"\n";
+	for(int i =0 ; i< labels.rows; i++){
+		for(int j = 0 ; j < labels.cols; j++){
+
+			int index = j;
+
+			clusters[labels.at<int>(i, j)].push_back(index);
+
+			cout<<" index: "<< index << "\n";	
+		}
+	}
+	cout<<"###############CLUSTERS##################"<<"\n";
+
+	for( int i = 0 ; i < clusterCount; i++){
+		cout<<"CLUSTER: "<< i <<"\n";
+		cout<<"----------"<<"\n";
+
+			for ( int k = 0; k < clusters[i].size(); k++){
+
+				cout<<names[clusters[i][k]]<<"\n";
+			}
+		
+	}
 
 
-	
 
 }
 
@@ -102,9 +112,6 @@ Mat calculateKMeans(vector<Mat> view1, vector<Mat> view2, vector<Mat> view3){
 	vector<vector<float>> hogSamples;
 	getHOG(hogSamples, view1, view2, view3);
 
-	// Mat trainMat(trainHOG.size(), descriptor_size, CV_32FC1);
-	// Mat testMat(testHOG.size(), descriptor_size, CV_32FC1);
-
 	int descriptor_size = hogSamples[0].size();
 
 	cout<<"descriptors Size: "<< descriptor_size<<"\n";
@@ -117,8 +124,6 @@ Mat calculateKMeans(vector<Mat> view1, vector<Mat> view2, vector<Mat> view3){
 	cout<<"Samples Size: "<< samples.size()<<"\n";
 
 
-	int clusterCount = 3;
-
 	Mat labels;
   	int attempts = 5;
   	Mat centers;
@@ -127,9 +132,6 @@ Mat calculateKMeans(vector<Mat> view1, vector<Mat> view2, vector<Mat> view3){
   	// kmeans(samples, clusterCount, labels, TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 10, 0.01), attempts, KMEANS_PP_CENTERS, centers );
   	kmeans(samples, clusterCount, labels, TermCriteria(CV_TERMCRIT_ITER, 10, 0.01), attempts, KMEANS_PP_CENTERS, centers );
 
-  	cout<<"I am here"<<"\n";
-
-  	cout<<"Labels size:" <<labels.size();
 
   	return labels;
 
