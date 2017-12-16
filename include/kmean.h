@@ -30,3 +30,4 @@ Mat calculateKMeans(vector<Mat> view);
 void ConvertVectortoMatrix (vector<vector<float>> &hogSamples,  Mat &samples);
 void loadData (vector<Mat> &view1, vector<Mat> &view2, vector<Mat> &view3, string &pathName);
 void getHOG(vector<vector<float>> &hogVectors, vector<Mat> &samples);
+void printLabels(Mat labels);

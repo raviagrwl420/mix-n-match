@@ -32,6 +32,8 @@ void getLabels(vector<PartBase*> chairs){
 
 	}
 
+
+
 	// vector<vector<float>> hogVectors1, hogVectors2, hogVectors3;
 
 	// getHOG(hogVectors1, view1);
@@ -44,12 +46,34 @@ void getLabels(vector<PartBase*> chairs){
 	labels2 = calculateKMeans(view2);
 	labels3 = calculateKMeans(view3);
 
+	cout<<"I am here22222222222"<<"\n";
+
 	cout<<"Labels1 size: \t"<< labels1.size();
 	cout<<"Labels2 size: \t"<< labels2.size();
 	cout<<"Labels3 size: \t"<< labels3.size();
 
+	
+	printLabels(labels1);
+	printLabels(labels2);
+	printLabels(labels3);
+
+	cout<<"I am here3"<<"\n";
 
 
+	
+
+}
+
+void printLabels(Mat labels){
+	cout<<"Labels:"<<"\n\n";
+
+	for(int i =0 ; i< labels.rows; i++){
+
+		for(int j = 0 ; j < labels.cols; j++)
+
+		cout<<labels.at<int>(i, j)<<"\n";
+
+	}
 }
 
 
@@ -78,9 +102,19 @@ Mat calculateKMeans(vector<Mat> view){
 	vector<vector<float>> hogSamples;
 	getHOG(hogSamples, view);
 
+	// Mat trainMat(trainHOG.size(), descriptor_size, CV_32FC1);
+	// Mat testMat(testHOG.size(), descriptor_size, CV_32FC1);
 
-	Mat samples;
+	int descriptor_size = hogSamples[0].size();
+
+	cout<<"descriptors Size: "<< descriptor_size<<"\n";
+	cout<<"Number of samples: "<<hogSamples.size()<<"\n";
+
+
+	Mat samples(hogSamples.size(),descriptor_size, CV_32FC1);
 	ConvertVectortoMatrix(hogSamples,samples);
+
+	cout<<"Samples Size: "<< samples.size()<<"\n";
 
 
 	int clusterCount = 3;
@@ -89,7 +123,13 @@ Mat calculateKMeans(vector<Mat> view){
   	int attempts = 5;
   	Mat centers;
 
-  	kmeans(samples, clusterCount, labels, TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 100, 0.0001), attempts, KMEANS_PP_CENTERS, centers );
+  	
+  	// kmeans(samples, clusterCount, labels, TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 10, 0.01), attempts, KMEANS_PP_CENTERS, centers );
+  	kmeans(samples, clusterCount, labels, TermCriteria(CV_TERMCRIT_ITER, 10, 0.01), attempts, KMEANS_PP_CENTERS, centers );
+
+  	cout<<"I am here"<<"\n";
+
+  	cout<<"Labels size:" <<labels.size();
 
   	return labels;
 
