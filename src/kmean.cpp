@@ -50,7 +50,7 @@ void getLabels(vector<PartBase*> chairs){
 	for(int i =0 ; i< labels.rows; i++){
 		for(int j = 0 ; j < labels.cols; j++){
 
-			int index = j;
+			int index = i;
 
 			clusters[labels.at<int>(i, j)].push_back(index);
 
