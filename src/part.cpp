@@ -298,8 +298,10 @@ PartBase* Part::make_copy() {
 	Mesh kidMesh(this->mesh);
 
 	// Apply Transformation
+	Transformation transformation = this->transformation;
+
 	for (VertexIndex v: kidMesh.vertices()) {
-		mesh.point(v) = (this->transformation).transform(mesh.point(v));
+		kidMesh.point(v) = (this->transformation).transform(kidMesh	.point(v));
 	}
 
 	Part* newPart = new Part(theLabel, kidMesh);	

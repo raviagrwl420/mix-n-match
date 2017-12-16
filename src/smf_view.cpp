@@ -230,15 +230,27 @@ void swap (PartBase *chairA, PartBase *chairB, string GroupName) {
 	Group *group1 = (Group*) g1;
 	Group *group2 = (Group*) g2; 
 
+	vector<pair<PartBase*, PartBase*>> pairs; 
 	for (PartBase *p1: group1->members) {
 		for (PartBase *p2: group2->members) {
 			Part *part1 = (Part*) p1;
 			Part *part2 = (Part*) p2;
 			float hausdorffDistance = getHausdorffDistance(part1->mesh, part2->mesh);
 			if (hausdorffDistance < 0.25) {
-				part2->applyTransformation(getTransformation(part1->fitSegment, part2->fitSegment));		
+				pairs.push_back(make_pair(p1, p2));
 			}
-		}
+		}		
+	}
+
+	for (pair<PartBase*, PartBase*> pair : pairs) {
+		Part *part1 = (Part*) pair.first->make_copy();
+		Part *part2 = (Part*) pair.second->make_copy();
+		part2->transformTo(part1);
+		part1->transformTo(part2);
+		part1 = (Part*) part1->make_copy();
+		part2 = (Part*) part2->make_copy();
+		chairA->getMember(GroupName)->setMember(part1->label, part2);
+		chairB->getMember(GroupName)->setMember(part2->label, part1);
 	}
 }
 
@@ -253,38 +265,22 @@ void chair_cb (int control) {
 		PartBase *legB = chairB->getMember("Leg_Group");
 		swap(chairA, chairB, "Leg_Group");
 
-		chairA->setMember("Leg_Group", legB);
-		chairB->setMember("Leg_Group", legA);
-
-		std::cout << "Check if ChairA plausible? " << std::endl;
-		int isPlausibleChairA = isPlausible(chairA);
-		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
-		int isPlausibleChairB = isPlausible(chairB);
-		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
+		// chairA->setMember("Leg_Group", legB);
+		// chairB->setMember("Leg_Group", legA);
 	} else if (control == SWAP_BACK) {
 		PartBase *backA = chairA->getMember("Back_Group");
 		PartBase *backB = chairB->getMember("Back_Group");
 		swap(chairA, chairB, "Back_Group");
 
-		chairA->setMember("Back_Group", backB);
-		chairB->setMember("Back_Group", backA);
-
-		int isPlausibleChairA = isPlausible(chairA);
-		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
-		int isPlausibleChairB = isPlausible(chairB);
-		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
+		// chairA->setMember("Back_Group", backB);
+		// chairB->setMember("Back_Group", backA);
 	} else if (control == SWAP_SEAT) {
 		PartBase *seatA = chairA->getMember("Seat_Group");
 		PartBase *seatB = chairB->getMember("Seat_Group");
 		swap(chairA, chairB, "Seat_Group");
 
-		chairA->setMember("Seat_Group", seatB);
-		chairB->setMember("Seat_Group", seatA);
-
-		int isPlausibleChairA = isPlausible(chairA);
-		std::cout << "Is ChairA plausible? " << isPlausibleChairA << std::endl;
-		int isPlausibleChairB = isPlausible(chairB);
-		std::cout << "Is ChairB plausible? " << isPlausibleChairB << std::endl;
+		// chairA->setMember("Seat_Group", seatB);
+		// chairB->setMember("Seat_Group", seatA);
 	}
 }
 

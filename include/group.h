@@ -15,11 +15,12 @@
 #include <vector>
 #include <map>
 
-#define HAUSDORFF_THRESHOLD 0.25
+#define HAUSDORFF_THRESHOLD 0.2
 
 using std::vector;
 using std::map;
 using std::make_pair;
+using std::pair;
 
 enum Transformation_Type {UNIFORM, NONUNIFORM};
 
@@ -47,7 +48,8 @@ public:
 	PartBase *getParentGlobally (string label);
 	void print (int level);		
     PartBase* make_copy();		
-    bool replace(string label1, PartBase *part2, string label2);		
+    bool replace(string label1, PartBase *part2, string label2);
+    bool partByPartSwap (string label1, PartBase *p2, string label2);		
     bool swap(string label1, PartBase *part2, string label2);
 
     // Transformation
@@ -287,20 +289,6 @@ bool Group::removeMember(string label) {
 
 }
 
-void partByPart (Group *group1, Group* group2) {
-	for (PartBase *p1: group1->members) {
-		for (PartBase *p2: group2->members) {
-			Part *part1 = (Part*) p1->make_copy();
-			Part *part2 = (Part*) p2->make_copy();
-			float hausdorffDistance = getHausdorffDistance(part1->mesh, part2->mesh);
-			if (hausdorffDistance < HAUSDORFF_THRESHOLD) {
-				part2->transformTo(part1);
-				group1->replace(part1->label, group2, part2->label);
-			}
-		}
-	}
-}
-
 bool Group::replace(string label1, PartBase *part2, string label2)
 {	
 		PartBase *parent = this->getParentGlobally(label1);		
@@ -325,13 +313,8 @@ bool Group::replace(string label1, PartBase *part2, string label2)
 			Group *sourceGroup = dynamic_cast<Group*>(sourcePart);
 			
 			if ((copyGroup != NULL) && (sourceGroup != NULL)) {
-				if (true) {
-					copyGroup->transformTo(sourceGroup, NONUNIFORM);
-					theParent->addMember(copyElement);		
-				} else {
-					partByPart(sourceGroup, copyGroup);
-					theParent->addMember(sourceGroup);
-				}				
+				copyGroup->transformTo(sourceGroup, NONUNIFORM);
+				theParent->addMember(copyElement);
 			} else {
 				theParent->addMember(copyElement);
 			}
@@ -344,14 +327,49 @@ bool Group::replace(string label1, PartBase *part2, string label2)
 		return false;
 }
 
+bool Group::partByPartSwap (string label1, PartBase *p2, string label2) {
+	Group *group1 = dynamic_cast<Group*> (this->getMemberGlobally(label1));
+	Group *group2 = dynamic_cast<Group*> (p2->getMemberGlobally(label2));
+
+	if (group1 == NULL || group2 == NULL)
+		return false;
+
+	vector<pair<PartBase*, PartBase*>> pairs; 
+	for (PartBase *p1: group1->members) {
+		for (PartBase *p2: group2->members) {
+			Part *part1 = (Part*) p1;
+			Part *part2 = (Part*) p2;
+			float hausdorffDistance = getHausdorffDistance(part1->mesh, part2->mesh);
+			if (hausdorffDistance < 0.25) {
+				pairs.push_back(make_pair(p1, p2));
+			}
+		}
+	}
+
+	int count = 0;
+	for (pair<PartBase*, PartBase*> pair : pairs) {
+		Part *part1 = (Part*) pair.first->make_copy();
+		Part *part2 = (Part*) pair.second->make_copy();
+		part2->transformTo(part1);
+		part1->transformTo(part2);
+		this->getMember(label1)->setMember(part1->label, part2);
+		p2->getMember(label2)->setMember(part2->label, part1);
+		count++;
+	}
+
+	return count > 0;
+}
+
 bool Group::swap(string label1, PartBase *part2, string label2)
 {
 	PartBase *copyPart1 = this->make_copy();
 
-	this->replace(label1, part2, label2);
+	bool partByPartSwapPerformed = partByPartSwap(label1, part2, label2);
 
-	part2->replace(label2, copyPart1, label1);
-
+	if (!partByPartSwapPerformed) {
+		this->replace(label1, part2, label2);
+		part2->replace(label2, copyPart1, label1);	
+	}
 }
 
 void Group::setMember (string label, PartBase *member) {
