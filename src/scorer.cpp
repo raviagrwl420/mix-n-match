@@ -9,6 +9,10 @@ vector<pair<Mat, int>> testData2;
 vector<pair<Mat, int>> testData3;
 
 int modelCount = 1;
+int ptest_size;
+int ntest_size;
+
+//change BlockSize to (224, 224) for test examples
 
 HOGDescriptor hog(
 	Size(224, 224), //winSize
@@ -45,10 +49,11 @@ void getTrainTest (vector<pair<Mat, int>> pView, vector<pair<Mat, int>> nView,
 	vector<pair<Mat, int>> &trainData, vector<pair<Mat, int>> &testData) {
 	
 	int ptrain_size = TRAIN_RATIO * pView.size();
-	int ptest_size = (1 - TRAIN_RATIO) * pView.size();
+	ptest_size = (1 - TRAIN_RATIO) * pView.size();
+
 
 	int ntrain_size = TRAIN_RATIO * nView.size();
-	int ntest_size = (1 - TRAIN_RATIO) * nView.size();
+	ntest_size = (1 - TRAIN_RATIO) * nView.size();
 
 	vector<pair<Mat, int>> ptrain(pView.begin(), pView.begin() + ptrain_size);
 	vector<pair<Mat, int>> ptest(pView.begin() + ptrain_size, pView.end());
@@ -176,8 +181,21 @@ void getSVMParams (SVM *svm) {
 
 void SVMtrain (Mat &trainMat, vector<int> &trainLabels, Mat &testResponse, Mat &testMat, String modelName){
 	Ptr<SVM> svm = SVM::create();
-	svm->setGamma(0.50625);
-	svm->setC(12.5);
+
+	if(modelName == MODEL_1){
+		svm->setGamma(0.03375);
+		svm->setC(62.5);
+	}else if(modelName == MODEL_2){
+		svm->setGamma(0.50625);
+		svm->setC(62.5);//change C = 100 for test examples
+
+	}else if(modelName == MODEL_3){
+
+		svm->setGamma(0.50625);
+		svm->setC(12.5);//change C = 100 for test examples
+
+	}
+	
 	svm->setKernel(SVM::RBF);
 	svm->setType(SVM::C_SVC);
 	Ptr<TrainData> td = TrainData::create(trainMat, ROW_SAMPLE, trainLabels);
@@ -187,14 +205,20 @@ void SVMtrain (Mat &trainMat, vector<int> &trainLabels, Mat &testResponse, Mat &
 	getSVMParams(svm);
 }
 
-void SVMevaluate (Mat &testResponse, float &count, float &accuracy, vector<int> &testLabels){
+void SVMevaluate (Mat &testResponse, float &countn, float &countp,float &accuracyn,float &accuracyp, vector<int> &testLabels){
+
+
 	for (int i = 0; i < testResponse.rows; i++) {
-		if(testResponse.at<float>(i, 0) == testLabels[i]){
-			count = count + 1;
-		}  
+		if(testResponse.at<float>(i, 0) == testLabels[i] && testLabels[i] == 0){
+			countn = countn + 1;
+		}  else if (testResponse.at<float>(i, 0) == testLabels[i] && testLabels[i] == 1){
+			countp = countp + 1;
+		}
 	}
 
-	accuracy = (count / testResponse.rows) * 100;
+	accuracyn = (countn/ ntest_size) * 100;
+	accuracyp = (countp/ ptest_size) * 100;
+
 }
 
 void trainModel (vector<pair<Mat, int>> trainPair, vector<pair<Mat, int>> testPair, String modelName) {
@@ -228,12 +252,15 @@ void trainModel (vector<pair<Mat, int>> trainPair, vector<pair<Mat, int>> testPa
 	Mat testResponse;
 	SVMtrain(trainMat, trainLabels, testResponse, testMat, modelName); 
 
-	float count = 0;
-	float accuracy = 0;
+	float countn = 0;
+	float countp = 0;
+	float accuracyn = 0;
+	float accuracyp = 0;
 
-	SVMevaluate(testResponse, count, accuracy, testLabels);
+	SVMevaluate(testResponse, countn, countp, accuracyn, accuracyp, testLabels);
 
-	cout << "Accuracy of model " << modelCount << ": " << accuracy << "%" << endl;
+	cout << "Positive Accuracy of model " << modelCount << ": " << accuracyp << "%" << endl;
+	cout << "Negative Accuracy of model " << modelCount << ": " << accuracyn << "%" << endl;
 
 	modelCount++;
 }
@@ -292,6 +319,7 @@ float predict (PartBase *part, View view) {
 	}
 
 	float prediction = predict(projectionMatrix, view);
+	// cout<<"Prediction: \t"<< prediction<<"\n";
 	return prediction;
 }
 
@@ -299,8 +327,6 @@ int isPlausible (PartBase *part) {
 	float prediction1 = predict(part, SIDE);
 	float prediction2 = predict(part, TOP);
 	float prediction3 = predict(part, FRONT);
-	float max = prediction1 > prediction2 ? prediction1 : prediction2;
-	max = max > prediction3 ? max : prediction3;
-
-	return max < -0.9;
+	float threshold = 0;
+	return (prediction1 < threshold) && (prediction2 < threshold) && (prediction3 < threshold);
 }
